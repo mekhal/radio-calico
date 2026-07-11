@@ -38,6 +38,21 @@ jobs:
       actions: read
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: develop 
+      - name: Fetch private skills
+        uses: actions/checkout@v4
+        with:
+          repository: mekhal/claudeskill
+          token: ${{ secrets.SKILLS_REPO_TOKEN }}
+          ref: radio-calico-skill
+          path: .claude/_secret-skills-src
+          persist-credentials: false
+      - name: Install private skills
+        run: |
+          mkdir -p .claude/skills
+          cp -r .claude/_secret-skills-src/* .claude/skills/ 2>/dev/null || true
+          rm -rf .claude/_secret-skills-src
       - uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
