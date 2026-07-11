@@ -7,7 +7,7 @@
 
   **A demonstration of an AI-Driven Development Life Cycle, driven 100% through GitHub**
 
-  Testing whether the Claude GitHub agent can deliver production-grade software end-to-end — with a human making the decision at every step.
+  Testing whether the Claude GitHub agent can deliver production-grade software end-to-end with a human making the decision at every step.
 
   `Human-in-the-loop` · `TDD` · `Skill capture & reuse` · `Production-grade`
 </div>
@@ -16,14 +16,14 @@
 
 ## 1. What is this?
 
-This repo is **not an application** — it is a **process demo**.
+This repo is **not an application** it is a **process demo**.
 
-The goal is not to run the Radio Calico app locally. It is to prove that the **workflow** between a human and the Claude GitHub agent can produce production-grade work entirely on GitHub — from taking the task, planning, writing tests, writing code, all the way to review and merge.
+The goal is not to run the Radio Calico app locally. It is to prove that the **workflow** between a human and the Claude GitHub agent can produce production-grade work entirely on GitHub from taking the task, planning, writing tests, writing code, all the way to review and merge.
 
 > Everything starts by opening a **GitHub issue** and tagging `@claude`.
 > The agent then works through the **AI-DLC Loop** below, pausing for a human decision at every gate.
 
-> **Note on language:** This repository uses **Thai as the primary language** for all process documentation, decision logs, and examples. This is intentional — the precision required for testing Claude Agent commands on GitHub demands the use of Thai. If you're interested in following along, you can use **Google Translate** to translate the entire page for your reference.
+> **Note on language:** This repository uses **Thai as the primary language** for all process documentation, decision logs, and examples. This is intentional the precision required for testing Claude Agent commands on GitHub demands the use of Thai. If you're interested in following along, you can use **Google Translate** to translate the entire page for your reference.
 
 ---
 
@@ -31,14 +31,14 @@ The goal is not to run the Radio Calico app locally. It is to prove that the **w
 
 | Principle | Meaning |
 |---|---|
-| **Human decides, always** | A human decides at every step — AI proposes, it does not decide. |
+| **Human decides, always** | A human decides at every step AI proposes, it does not decide. |
 | **TDD** | Write a failing test first, then write the code to make it pass. |
-| **Test AC only** | Tests target the Acceptance Criteria only — never so many that a human can't review them. |
+| **Test AC only** | Tests target the Acceptance Criteria only never so many that a human can't review them. |
 | **Reuse-first** | Write reusable code, and test the reusable pieces. |
 | **Review-sized PRs** | If the code/tests get too big, split into tickets a human can actually review. |
 | **Capture the decision** | Every human decision is captured as a *skill* so the agent gets better next round. |
 | **Production-grade** | Every PR must pass security and quality gates. |
-| **Close the current issue** | Missed functionality becomes a new issue — never dragged into the current loop. |
+| **Close the current issue** | Missed functionality becomes a new issue never dragged into the current loop. |
 
 ---
 
@@ -61,7 +61,7 @@ jobs:
   claude:
     if: contains(github.event.comment.body, '@claude') || contains(github.event.issue.body, '@claude')
     runs-on: ubuntu-latest
-    permissions:          # least-privilege — only what is needed
+    permissions:          # least-privilege only what is needed
       contents: write
       pull-requests: write
       issues: write
@@ -79,24 +79,24 @@ jobs:
 ## 4. AI-DLC Loop (the core)
 
 <div align="center">
-  <img src="aidlc-loop.png" alt="AI-DLC Loop — 7 steps" width="900" />
+  <img src="aidlc-loop.png" alt="AI-DLC Loop 7 steps" width="900" />
 </div>
 
 ### Step by step
 
 | # | Actor | What happens | Human gate | Deliverable |
 |---|---|---|---|---|
-| **1** | Human | Open an issue (type: **Story / Improvement / Task**), describe the requirement, and tag `@claude`. | — | Issue |
-| **2** | AI | **Before planning**, the agent spawns a **sub-agent** to gather context using the **5 questions** (below) to frame the AC well, then produces a **plan + Acceptance Criteria** that are explicit per plan item. | — | Plan + AC (comment) |
-| **3** | Human | Review the plan and AC → if not OK, comment with the fixes / if OK, comment to approve **and specify the unit tests and integration tests wanted** — *if the AI has any doubts, it must ask the human to clarify first, before the human approves.* | Approve plan | Approved plan |
-| **4** | AI | Review the plan again, then write **failing tests for the AC only** as approved → open a **Test PR** for review. | — | Test PR |
+| **1** | Human | Open an issue (type: **Story / Improvement / Task**), describe the requirement, and tag `@claude`. | | Issue |
+| **2** | AI | **Before planning**, the agent spawns a **sub-agent** to gather context using the **5 questions** (below) to frame the AC well, then produces a **plan + Acceptance Criteria** that are explicit per plan item. | | Plan + AC (comment) |
+| **3** | Human | Review the plan and AC → if not OK, comment with the fixes / if OK, comment to approve **and specify the unit tests and integration tests wanted** *if the AI has any doubts, it must ask the human to clarify first, before the human approves.* | Approve plan | Approved plan |
+| **4** | AI | Review the plan again, then write **failing tests for the AC only** as approved → open a **Test PR** for review. | | Test PR |
 | **5** | Human | Review and **approve the Test PR**. Once merged, the AI starts step 6. | Approve Test PR | Merged tests |
-| **6** | AI | Write the code per the plan, **reuse-first** → open a **Code PR**. | — | Code PR |
+| **6** | AI | Write the code per the plan, **reuse-first** → open a **Code PR**. | | Code PR |
 | **7** | Human | Review the code → may request changes / missed functionality becomes a **new issue** / when everything is OK, the human **merges into `develop`** = loop closed. | Merge | Code on `develop` |
 
 > **Splitting tickets:** In steps 4 and 6, if the generated code/tests are too large, Claude must **split them into multiple tickets** as appropriate so a human can review them.
 
-> **Rework:** The diagram is drawn as a cycle to convey the overall flow — in practice, if the human reviews the code (step 7) and finds something to fix, the AI **loops back to step 6** (fix the code) and opens a new Code PR until it passes. **Missed functionality** becomes a **new issue** and is not fixed inside the current loop, keeping the focus on closing the current issue.
+> **Rework:** The diagram is drawn as a cycle to convey the overall flow in practice, if the human reviews the code (step 7) and finds something to fix, the AI **loops back to step 6** (fix the code) and opens a new Code PR until it passes. **Missed functionality** becomes a **new issue** and is not fixed inside the current loop, keeping the focus on closing the current issue.
 
 ### The 5 questions in step 2 (Sub-agent context discovery)
 
@@ -114,7 +114,7 @@ Before creating the plan, the sub-agent gathers information and asks the human u
 
 ## 5. Quickstart: one loop, end to end
 
-**Step 1 — Human opens an issue**
+**Step 1 Human opens an issue**
 
 ```
 Title: [Story] "Listen Now" button on the hero
@@ -128,7 +128,7 @@ so I can start the stream immediately.
 @claude
 ```
 
-**Step 2 — AI responds (abridged)**
+**Step 2 AI responds (abridged)**
 
 ```
 From the 5W frame:
@@ -146,10 +146,10 @@ Acceptance Criteria:
 Question before I plan further: does this round need a pause button?
 ```
 
-**Step 3 — Human approves**
+**Step 3 Human approves**
 
 ```
-Answer: no pause this round — plan looks good, approved
+Answer: no pause this round plan looks good, approved
 
 Unit test: button renders in the correct color + calls play() on click
 Integration test: HLS player loads the stream URL successfully
@@ -161,13 +161,13 @@ The AI then does **step 4** (Test PR) → Human **approves (step 5)** → AI **s
 
 ## 6. Rules of Engagement
 
-- **A human decides every time** — no step lets the AI merge or approve on its own.
-- **AI asks when in doubt** — before a human approves at any gate, if the AI has doubts it must ask the human to clarify first.
-- **PRs must be reviewable** — if too big, split into tickets (applies to both the test step and the code step).
-- **Tests stick to the AC** — no tests beyond the agreed AC scope.
-- **Reuse-first** — build reusable code and write unit tests covering the reusable pieces.
-- **Missed work → new issue** — don't drag newly found work into the current loop; focus on closing the current issue.
-- **Separate PR types** — the Test PR (step 4) and Code PR (step 6) are distinct PRs so review happens in layers.
+- **A human decides every time** no step lets the AI merge or approve on its own.
+- **AI asks when in doubt** before a human approves at any gate, if the AI has doubts it must ask the human to clarify first.
+- **PRs must be reviewable** if too big, split into tickets (applies to both the test step and the code step).
+- **Tests stick to the AC** no tests beyond the agreed AC scope.
+- **Reuse-first** build reusable code and write unit tests covering the reusable pieces.
+- **Missed work → new issue** don't drag newly found work into the current loop; focus on closing the current issue.
+- **Separate PR types** the Test PR (step 4) and Code PR (step 6) are distinct PRs so review happens in layers.
 
 ---
 
@@ -176,7 +176,7 @@ The AI then does **step 4** (Test PR) → Human **approves (step 5)** → AI **s
 The heart of making the agent "keep getting better" is turning **human decisions** into **reusable skills**.
 
 <div align="center">
-  <img src="skill-capture-reuse.png" alt="Skill Capture & Reuse — continuous improvement loop" width="900" />
+  <img src="skill-capture-reuse.png" alt="Skill Capture & Reuse continuous improvement loop" width="900" />
 </div>
 
 - **Capture:** Every time a human decides (choosing an approach, setting a rule, redirecting a plan), it is recorded in the decision log.
@@ -207,9 +207,9 @@ aidlc-radiocalico/
 └─ RadioCalicoStyle/             ← brand assets + style guide (already present)
 ```
 
-> The folders above (except `RadioCalicoStyle/`) do not exist yet — run [`scripts/scaffold.ps1`](scripts/scaffold.ps1) to create the empty structure.
+> The folders above (except `RadioCalicoStyle/`) do not exist yet run [`scripts/scaffold.ps1`](scripts/scaffold.ps1) to create the empty structure.
 >
-> **Skills** do not live in this repo — they are stored separately in [`mekhal/claudeskill`](https://github.com/mekhal/claudeskill) *(private)*.
+> **Skills** do not live in this repo they are stored separately in [`mekhal/claudeskill`](https://github.com/mekhal/claudeskill) *(private)*.
 
 ### Branching
 
@@ -217,13 +217,13 @@ aidlc-radiocalico/
 |---|---|
 | feature branch | Where the AI opens the Test PR / Code PR for each loop |
 | `develop` | The destination of each completed loop (merged by a human) |
-| `main` | Production — merging `develop` → `main` is a **prod release** and must be done by a **human only** |
+| `main` | Production merging `develop` → `main` is a **prod release** and must be done by a **human only** |
 
 ---
 
 ## 9. The Radio Calico Project
 
-The sample product used for the demo is **Radio Calico** — a high-quality, ad-free lossless audio radio/streaming service (24-bit / 48 kHz).
+The sample product used for the demo is **Radio Calico** a high-quality, ad-free lossless audio radio/streaming service (24-bit / 48 kHz).
 
 - **Brand & UI Style Guide:** [`RadioCalicoStyle/RadioCalico_Style_Guide.txt`](RadioCalicoStyle/RadioCalico_Style_Guide.txt)
 - **Logo & Layout:** [`RadioCalicoStyle/`](RadioCalicoStyle/)
@@ -248,7 +248,7 @@ Every Code PR (step 6) must pass these gates before a human merges:
 
 ## 11. References & Acknowledgements
 
-- The ideas and process in this project were inspired by the Udemy course **"Claude Code: Building Faster with AI, from Prototype to Prod"** — thanks to **Frank Kane**.
+- The ideas and process in this project were inspired by the Udemy course **"Claude Code: Building Faster with AI, from Prototype to Prod"** thanks to **Frank Kane**.
 - Thanks to **Kunaruk Osatapirat** (speaker) for the talk **"AI-driven architecture: Designing distributed systems at scale"** at **AWS Summit Bangkok 2026**.
 
 ---
