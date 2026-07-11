@@ -1,0 +1,96 @@
+Radio Calico Brand & UI Style Guide
+===================================
+
+1. Logo & Usage
+
+Full-Color Logo
+---------------
+- Clear space: keep a margin equal to 50% of the logo’s diameter all around.
+- Minimum size: 40 px diameter on screen; 12 mm in print.
+- Backgrounds: use on white or on a solid field of the “mint” background color. On very dark or busy images, place inside a white or mint circle.
+- Don’ts:
+  - Don’t stretch, skew, or rotate.
+  - Don’t recolor the cat or headphones.
+  - Don’t add drop-shadows or glows.
+
+2. Color Palette
+
+| Name             | Hex      | RGB            | Usage                                  |
+|------------------|----------|----------------|----------------------------------------|
+| Mint             | #D8F2D5  | 216/242/213    | Logo circle, background fills, accents |
+| Forest Green     | #1F4E23  | 31/78/35       | Logo border, primary buttons, headings |
+| Teal             | #38A29D  | 56/162/157     | Headphone ear-cups, nav bar background|
+| Calico Orange    | #EFA63C  | 239/166/60     | Cat’s orange patch, call-to-action bits|
+| Charcoal         | #231F20  | 35/31/32       | Body text, icon outlines               |
+| Cream            | #F5EADA  | 245/234/218    | Secondary backgrounds, cards           |
+| White            | #FFFFFF  | 255/255/255    | Text on dark, backgrounds              |
+
+3. Typography
+
+| Style        | Font                    | Weight | Size            | Line-Height |
+|--------------|-------------------------|--------|-----------------|-------------|
+| Heading 1    | Montserrat, sans-serif  | 700    | 48 px / 3 rem   | 1.2         |
+| Heading 2    | Montserrat, sans-serif  | 600    | 36 px / 2.25 rem| 1.3         |
+| Heading 3    | Montserrat, sans-serif  | 500    | 24 px / 1.5 rem | 1.4         |
+| Body         | Open Sans, sans-serif   | 400    | 16 px / 1 rem   | 1.6         |
+| Small        | Open Sans, sans-serif   | 400    | 14 px / 0.875 rem| 1.4        |
+
+Fallback stack:
+font-family: "Montserrat", "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+4. UI Components
+
+Buttons
+-------
+Primary: background: #1F4E23; color: #FFF; border-radius: 4px; padding: 0.75rem 1.5rem; text-transform: uppercase; letter-spacing: 0.05em;
+Secondary: background: transparent; color: #1F4E23; border: 2px solid #1F4E23; border-radius: 4px;
+Hover states:
+- Primary → lighten: background: #38A29D;
+- Secondary → background: #D8F2D5;
+
+Form Inputs
+-----------
+Text inputs: border: 1px solid #CCC; border-radius: 4px; padding: 0.5rem;
+Focus: border-color: #38A29D; box-shadow: 0 0 0 3px rgba(56,162,157,0.3);
+
+Audio Controls
+--------------
+Icons in Charcoal (#231F20) on Cream or Mint backgrounds
+Buttons: circular hit area ≥ 40 px, icon centered, no labels
+Volume slider: custom thumb (circle) with teal fill
+
+5. Layout & Spacing
+
+Grid: 12-column, 8 px baseline
+Max content width: 1200 px; center aligned
+Gutters: 24 px between columns
+Vertical rhythm: use multiples of 16 px (padding/margin)
+
+6. Imagery & Iconography
+
+Photography: high-contrast, clean compositions, often dark/moody hero shots with teal gradient overlays.
+Illustrations: flat-vector style, use brand palette, minimal detail.
+Icons: 2 px stroke, rounded line caps, match Charcoal color; standard set (play, pause, volume, links).
+
+7. Voice & Tone
+
+Friendly & Inviting: “Kick back, enjoy the crystal-clear audio…”
+Expert & Trustworthy: emphasize “24-bit / 48 kHz lossless”
+No nonsense: ad-free, data-free, subscription-free; clear calls to action
+
+Putting It All Together
+-----------------------
+
+Header (Hero)
+- Full-width dark photo
+- Teal nav bar with white links & centered logo
+- Large white H1 + mint “Listen Now” button
+
+Body
+- White background, charcoal text
+- Generous margins (64 px top/bottom)
+- Section headings (Montserrat H2 in Forest Green)
+
+Footer
+- Cream background
+- Mint links on Forest Green text
