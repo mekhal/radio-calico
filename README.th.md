@@ -207,8 +207,6 @@ aidlc-radiocalico/
 └─ RadioCalicoStyle/             ← brand assets + style guide (มีอยู่แล้ว)
 ```
 
-> โฟลเดอร์ข้างบน (ยกเว้น `RadioCalicoStyle/`) ยังไม่ถูกสร้าง — รันสคริปต์ [`scripts/scaffold.ps1`](scripts/scaffold.ps1) เพื่อสร้างโครงเปล่าได้
->
 > **Skills** ไม่ได้อยู่ใน repo นี้ เก็บแยกใน [`mekhal/claudeskill`](https://github.com/mekhal/claudeskill) *(private)*
 
 ### Branching

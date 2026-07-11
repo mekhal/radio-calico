@@ -207,8 +207,6 @@ aidlc-radiocalico/
 └─ RadioCalicoStyle/             ← brand assets + style guide (already present)
 ```
 
-> The folders above (except `RadioCalicoStyle/`) do not exist yet run [`scripts/scaffold.ps1`](scripts/scaffold.ps1) to create the empty structure.
->
 > **Skills** do not live in this repo they are stored separately in [`mekhal/claudeskill`](https://github.com/mekhal/claudeskill) *(private)*.
 
 ### Branching
