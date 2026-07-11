@@ -3,7 +3,7 @@
 
   # Radio Calico · AI-DLC Demo
 
-  **English** · [ไทย](README.md)
+  **English** · [ไทย](README.th.md)
 
   **A demonstration of an AI-Driven Development Life Cycle, driven 100% through GitHub**
 
@@ -22,6 +22,8 @@ The goal is not to run the Radio Calico app locally. It is to prove that the **w
 
 > Everything starts by opening a **GitHub issue** and tagging `@claude`.
 > The agent then works through the **AI-DLC Loop** below, pausing for a human decision at every gate.
+
+> **Note on language:** This repository uses **Thai as the primary language** for all process documentation, decision logs, and examples. This is intentional — the precision required for testing Claude Agent commands on GitHub demands the use of Thai. If you're interested in following along, you can use **Google Translate** to translate the entire page for your reference.
 
 ---
 
@@ -173,14 +175,9 @@ The AI then does **step 4** (Test PR) → Human **approves (step 5)** → AI **s
 
 The heart of making the agent "keep getting better" is turning **human decisions** into **reusable skills**.
 
-```mermaid
-flowchart LR
-    A["Human makes a decision<br/>during the loop"] --> B["Record the decision<br/>(decision log)"]
-    B --> C["Distill into a skill"]
-    C --> D["Store in the private skills repo"]
-    D --> E["Agent invokes it<br/>in the next loop"]
-    E --> A
-```
+<div align="center">
+  <img src="skill-capture-reuse.png" alt="Skill Capture & Reuse — continuous improvement loop" width="900" />
+</div>
 
 - **Capture:** Every time a human decides (choosing an approach, setting a rule, redirecting a plan), it is recorded in the decision log.
 - **Distill:** Recurring/valuable decisions are written up as skills.
@@ -195,8 +192,8 @@ flowchart LR
 
 ```
 aidlc-radiocalico/
-├─ README.md                     ← Thai version: describes the AI-DLC process
-├─ README.en.md                  ← this file (English)
+├─ README.md                     ← this file (English, default)
+├─ README.th.md                  ← Thai version: describes the AI-DLC process
 ├─ .github/
 │  ├─ ISSUE_TEMPLATE/            ← issue templates: story / improvement / task
 │  ├─ pull_request_template.md   ← pre-review PR checklist

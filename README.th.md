@@ -1,0 +1,258 @@
+<div align="center">
+  <img src="RadioCalicoStyle/RadioCalicoLogoTM.png" alt="Radio Calico" width="120" />
+
+  # Radio Calico · AI-DLC Demo
+
+  [English](README.md) · **ไทย**
+
+  **โปรเจกต์สาธิต AI-Driven Development Life Cycle ที่ขับเคลื่อน 100% ผ่าน GitHub**
+
+  ทดสอบว่า Claude GitHub agent ทำงานพัฒนาซอฟต์แวร์ระดับ Production ได้แบบ end-to-end จริงหรือไม่ — โดยมีมนุษย์เป็นผู้ตัดสินใจในทุกขั้นตอน
+
+  `Human-in-the-loop` · `TDD` · `Skill capture & reuse` · `Production-grade`
+</div>
+
+---
+
+## 1. นี่คืออะไร
+
+Repo นี้ **ไม่ใช่แอปพลิเคชัน** — แต่เป็น **การสาธิตกระบวนการ (process demo)**
+
+เป้าหมายไม่ได้อยู่ที่การรันแอป Radio Calico บนเครื่อง local แต่อยู่ที่การพิสูจน์ว่า **ขั้นตอนการทำงาน (workflow)** ระหว่างมนุษย์กับ Claude GitHub agent สามารถผลิตงานระดับ production ได้จริงบน GitHub ทั้งหมด — ตั้งแต่รับโจทย์ วางแผน เขียนเทส เขียนโค้ด ไปจนถึง review และ merge
+
+> ทุกอย่างเริ่มจากการเปิด **GitHub issue** แล้ว tag `@claude`
+> จากนั้น agent จะทำงานตาม **AI-DLC Loop** ด้านล่าง โดยหยุดรอมนุษย์ตัดสินใจในทุก gate
+
+> **หมายเหตุเรื่องภาษา:** Repository นี้ใช้ **ภาษาไทยเป็นหลัก** สำหรับเอกสารกระบวนการ decision log และตัวอย่างทั้งหมด เพราะความแม่นยำที่จำเป็นในการทดสอบคำสั่ง Claude Agent บน GitHub ต้องใช้ภาษาไทย หากท่านสนใจติดตามชมกระบวนการนี้ สามารถใช้ **Google Translate** แปลทั้ง page เพื่ออ้างอิงของท่านได้
+
+---
+
+## 2. หลักการสำคัญ (Core Principles)
+
+| หลักการ | ความหมาย |
+|---|---|
+| **Human decides, always** | มนุษย์ตัดสินใจทุกขั้น — AI เสนอ ไม่ใช่ AI ตัดสิน |
+| **TDD** | เขียน failing test ก่อนเสมอ แล้วค่อยเขียนโค้ดให้ผ่าน |
+| **Test เฉพาะ AC** | เขียนเทสมุ่งที่ Acceptance Criteria เท่านั้น ไม่เขียนเยอะจน review ไม่ไหว |
+| **Reuse-first** | เขียนโค้ดแบบใช้ซ้ำได้ และเทสตัวที่ reuse ได้ |
+| **Review-sized PRs** | ถ้าโค้ด/เทสใหญ่เกินไป ต้องแตก ticket ให้มนุษย์ review ไหว |
+| **Capture the decision** | ทุกการตัดสินใจของมนุษย์ถูกบันทึกเป็น *skill* เพื่อให้ agent เก่งขึ้นในรอบถัดไป |
+| **Production-grade** | ทุก PR ต้องผ่าน gate ด้าน security และ quality |
+| **ปิด issue ปัจจุบันให้จบ** | ฟังก์ชันที่ตกหล่นถูกดันเป็น issue ใหม่ ไม่ลากรวมใน loop เดิม |
+
+---
+
+## 3. Setup (เชื่อม `@claude` เข้ากับ repo)
+
+ก่อนเริ่ม loop แรก ต้องเชื่อม Claude GitHub agent เข้ากับ repo นี้:
+
+1. **ติดตั้ง Claude GitHub App** ให้ repo นี้ (ผ่าน Claude Code หรือ [github.com/apps/claude](https://github.com/apps/claude))
+2. **เพิ่ม secret** `ANTHROPIC_API_KEY` ที่ *Settings → Secrets and variables → Actions*
+3. **เพิ่ม workflow** `.github/workflows/claude.yml` ที่ trigger เมื่อมีการ mention `@claude` ใน issue หรือ PR comment ตัวอย่างโครง:
+
+```yaml
+name: Claude
+on:
+  issue_comment:
+    types: [created]
+  issues:
+    types: [opened, assigned]
+jobs:
+  claude:
+    if: contains(github.event.comment.body, '@claude') || contains(github.event.issue.body, '@claude')
+    runs-on: ubuntu-latest
+    permissions:          # least-privilege เท่าที่จำเป็น
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+```
+
+> ปรับรายละเอียดตาม official docs ล่าสุดของ Claude Code GitHub Action เมื่อเชื่อมเสร็จ การพิมพ์ `@claude` ใน issue จะปลุก agent ให้เริ่มทำงานตาม loop
+
+---
+
+## 4. AI-DLC Loop (แกนหลัก)
+
+<div align="center">
+  <img src="aidlc-loop.png" alt="AI-DLC Loop — 7 ขั้น" width="900" />
+</div>
+
+### รายละเอียดแต่ละขั้น
+
+| # | ผู้ทำ | สิ่งที่เกิดขึ้น | Human gate | ส่งมอบ |
+|---|---|---|---|---|
+| **1** | Human | สร้าง issue (type: **Story / Improvement / Task**) ใส่รายละเอียดความต้องการ แล้ว tag `@claude` | — | Issue |
+| **2** | AI | **ก่อนวางแผน** agent สร้าง **sub-agent** ไปหาข้อมูลตามกรอบ **5 คำถาม** (ดูด้านล่าง) เพื่อตีกรอบ AC ให้เหมาะสม จากนั้นสร้าง **plan + Acceptance Criteria** ที่ชัดเจนต่อแต่ละแผน | — | Plan + AC (comment) |
+| **3** | Human | ตรวจ plan และ AC → ถ้าไม่โอเค comment ระบุจุดแก้ / ถ้าโอเค comment อนุมัติ **พร้อมระบุแนว unit test และ integration test ที่ต้องการ** — *หาก AI มีจุดสงสัย ต้องถามมนุษย์ให้เคลียร์ก่อน มนุษย์จึงสั่ง approve* | อนุมัติ plan | Approved plan |
+| **4** | AI | review plan อีกครั้ง แล้วเขียน **failing test เฉพาะ AC** ตามที่ approve → เปิด **Test PR** รอ review | — | Test PR |
+| **5** | Human | review และ **approve Test PR** เมื่อผ่าน AI จึงเริ่มขั้น 6 | อนุมัติ Test PR | Merged tests |
+| **6** | AI | เขียนโค้ดตาม plan แบบ **reuse-first** → เปิด **Code PR** | — | Code PR |
+| **7** | Human | review code → สั่งแก้ได้ / ฟังก์ชันที่ตกหล่นดันเป็น **issue ใหม่** / เมื่อทุกอย่าง OK มนุษย์ **merge เข้า `develop`** = จบ loop | merge | Code บน `develop` |
+
+> **การแตก ticket:** ในขั้น 4 และ 6 หากโค้ด/เทสที่ generate มีขนาดใหญ่เกินไป Claude ต้อง **แบ่งเป็นหลาย ticket** ตามความเหมาะสม เพื่อให้มนุษย์ review ไหว
+
+> **การวน (rework):** diagram วาดเป็น cycle เพื่อสื่อภาพรวม — ในทางปฏิบัติ หากมนุษย์ review code (ขั้น 7) แล้วพบจุดต้องแก้ AI จะ **วนกลับไปแก้ที่ขั้น 6** (แก้โค้ด) แล้วเปิด Code PR ใหม่ จนกว่าจะผ่าน ส่วน**ฟังก์ชันที่ตกหล่น** ให้เปิดเป็น **issue ใหม่** ไม่แก้ปนใน loop เดิม เพื่อเน้นปิด issue ปัจจุบันให้จบ
+
+### กรอบ 5 คำถามในขั้น 2 (Sub-agent context discovery)
+
+ก่อนสร้าง plan sub-agent จะรวบรวมข้อมูลและตั้งคำถามกับมนุษย์ตามกรอบนี้ เพื่อตีกรอบ AC ให้แม่นที่สุด:
+
+| ลำดับ | คำถาม | มุ่งค้นหา |
+|---|---|---|
+| 2.1 | **What's known?** | ข้อเท็จจริง/ข้อจำกัดที่รู้แน่แล้ว |
+| 2.2 | **What if?** | สถานการณ์/เงื่อนไข edge case ที่อาจเกิด |
+| 2.3 | **Now what?** | ขั้นถัดไปที่ควรทำ |
+| 2.4 | **So what?** | ผลกระทบ/ความสำคัญของแต่ละทางเลือก |
+| 2.5 | **What's unsaid?** | สิ่งที่ยังไม่ได้พูด/สมมติฐานที่ซ่อนอยู่ |
+
+---
+
+## 5. Quickstart: ตัวอย่างหนึ่งรอบ loop
+
+**ขั้น 1 — Human เปิด issue**
+
+```
+Title: [Story] ปุ่ม "Listen Now" บนหน้า hero
+Type: Story
+
+ในฐานะผู้เยี่ยมชม ฉันอยากมีปุ่ม "Listen Now" ที่ hero
+เพื่อเริ่มเล่นสตรีมได้ทันที
+- ใช้สี Forest Green (#1F4E23) ตาม style guide
+- คลิกแล้วเริ่มเล่น HLS stream
+
+@claude
+```
+
+**ขั้น 2 — AI ตอบกลับ (ย่อ)**
+
+```
+สรุปจากกรอบ 5W:
+- What's known: มี style guide + stream URL อยู่แล้ว
+- What's unsaid: ต้องรองรับ pause ไหม? รองรับมือถือด้วยไหม?
+
+แผน:
+1. เพิ่มปุ่ม ListenNow (reuse Button component เดิม)
+2. ต่อ HLS player เข้ากับ stream URL
+
+Acceptance Criteria:
+- AC1: ปุ่มแสดงด้วยสี #1F4E23 บน hero
+- AC2: คลิกแล้ว stream เริ่มเล่นภายใน 2 วินาที
+
+คำถามก่อนวางแผนต่อ: รอบนี้ต้องมีปุ่ม pause ด้วยไหม?
+```
+
+**ขั้น 3 — Human approve**
+
+```
+ตอบ: รอบนี้ยังไม่ต้องมี pause — แผนโอเค approved
+
+Unit test: ปุ่ม render ด้วยสีถูกต้อง + เรียก play() เมื่อคลิก
+Integration test: HLS player โหลด stream URL สำเร็จ
+```
+
+จากนั้น AI ทำ **ขั้น 4** (Test PR) → Human **approve (ขั้น 5)** → AI **ขั้น 6** (Code PR) → Human **review + merge (ขั้น 7)** ปิด loop
+
+---
+
+## 6. กติกาการทำงาน (Rules of Engagement)
+
+- **มนุษย์ตัดสินใจทุกครั้ง** — ไม่มีขั้นไหนที่ AI merge หรือ approve ตัวเอง
+- **AI ถามเมื่อสงสัย** — ก่อนมนุษย์ approve ในแต่ละ gate หาก AI มีจุดสงสัย ต้องถามมนุษย์ให้เคลียร์ก่อน
+- **PR ต้อง review ไหว** — ถ้าใหญ่เกิน ให้แตก ticket (ใช้ได้ทั้งขั้นเทสและขั้นโค้ด)
+- **เทสยึด AC** — ไม่เขียนเทสเกินขอบเขต AC ที่ตกลงกัน
+- **Reuse-first** — สร้างโค้ดที่ใช้ซ้ำได้ และเขียน unit test ครอบตัวที่ reuse
+- **งานตกหล่น → issue ใหม่** — ไม่ลากงานที่พบเพิ่มเข้ามาใน loop ปัจจุบัน เน้นปิด issue ปัจจุบันให้จบ
+- **แยกชนิด PR** — Test PR (ขั้น 4) และ Code PR (ขั้น 6) เป็นคนละ PR เพื่อ review เป็นชั้น ๆ
+
+---
+
+## 7. Skill Capture & Reuse
+
+หัวใจของการทำให้ agent "เก่งขึ้นเรื่อย ๆ" คือการเปลี่ยน **การตัดสินใจของมนุษย์** ให้กลายเป็น **skill ที่นำกลับมาใช้ซ้ำได้**
+
+<div align="center">
+  <img src="skill-capture-reuse.png" alt="Skill Capture & Reuse — vòng lặp cải thiện liên tục" width="900" />
+</div>
+
+- **จับ (Capture):** ทุกครั้งที่มนุษย์ตัดสินใจ (เช่น เลือกแนวทาง, กำหนดกติกา, แก้ทิศทาง plan) จะถูกบันทึกไว้ใน decision log
+- **กลั่น (Distill):** การตัดสินใจที่เกิดซ้ำ/มีคุณค่า ถูกเขียนเป็น skill
+- **เก็บ (Store):** skill ถูกเก็บไว้ใน **private skills repo แยกต่างหาก** → [`mekhal/claudeskill`](https://github.com/mekhal/claudeskill) *(private)*
+- **เรียกใช้ (Reuse):** agent เรียก skill เหล่านี้ในรอบถัดไป ทำให้ทำงานได้ดีขึ้นและสอดคล้องกับการตัดสินใจเดิมของมนุษย์
+
+> **ทำไมต้องแยก repo?** repo demo นี้เป็นสาธารณะเพื่อโชว์กระบวนการ ส่วน skills เป็นสินทรัพย์เฉพาะทีมจึงเก็บใน private repo และดึงมาใช้ตอน agent ทำงาน
+
+---
+
+## 8. โครงสร้าง Repository
+
+```
+aidlc-radiocalico/
+├─ README.md                     ← เวอร์ชันภาษาอังกฤษ (default)
+├─ README.th.md                  ← ไฟล์นี้ (ไทย): อธิบายกระบวนการ AI-DLC
+├─ .github/
+│  ├─ ISSUE_TEMPLATE/            ← เทมเพลต issue: story / improvement / task
+│  ├─ pull_request_template.md   ← เช็กลิสต์ก่อน review PR
+│  └─ workflows/                 ← claude.yml, CI, security scan, quality gates
+├─ docs/
+│  ├─ ai-dlc-loop.md             ← รายละเอียดเชิงลึกของ loop
+│  └─ decisions/                 ← decision log (บันทึกการตัดสินใจของมนุษย์)
+├─ specs/                        ← plan + AC ที่ AI สร้างต่อแต่ละ issue
+├─ src/                          ← โค้ดผลิตภัณฑ์ Radio Calico
+├─ tests/                        ← เทส (เขียนก่อนโค้ดตาม TDD)
+└─ RadioCalicoStyle/             ← brand assets + style guide (มีอยู่แล้ว)
+```
+
+> โฟลเดอร์ข้างบน (ยกเว้น `RadioCalicoStyle/`) ยังไม่ถูกสร้าง — รันสคริปต์ [`scripts/scaffold.ps1`](scripts/scaffold.ps1) เพื่อสร้างโครงเปล่าได้
+>
+> **Skills** ไม่ได้อยู่ใน repo นี้ — เก็บแยกใน [`mekhal/claudeskill`](https://github.com/mekhal/claudeskill) *(private)*
+
+### Branching
+
+| Branch | ความหมาย |
+|---|---|
+| feature branch | ที่ AI เปิด Test PR / Code PR ในแต่ละ loop |
+| `develop` | ปลายทางของแต่ละ loop ที่สมบูรณ์ (มนุษย์ merge) |
+| `main` | Production — การ merge จาก `develop` → `main` คือ **prod release** และต้องทำโดย **มนุษย์เท่านั้น** |
+
+---
+
+## 9. โปรเจกต์ Radio Calico
+
+ผลิตภัณฑ์ตัวอย่างที่ใช้ในการสาธิตคือ **Radio Calico** — บริการฟังวิทยุ/สตรีมเสียง lossless คุณภาพสูง (24-bit / 48 kHz) แบบ ad-free
+
+- **Brand & UI Style Guide:** [`RadioCalicoStyle/RadioCalico_Style_Guide.txt`](RadioCalicoStyle/RadioCalico_Style_Guide.txt)
+- **Logo & Layout:** [`RadioCalicoStyle/`](RadioCalicoStyle/)
+- **Stream URL:** ดูใน [`RadioCalicoStyle/stream_URL.txt`](RadioCalicoStyle/stream_URL.txt)
+
+**Color palette:** Mint `#D8F2D5` · Forest Green `#1F4E23` · Teal `#38A29D` · Calico Orange `#EFA63C` · Charcoal `#231F20`
+
+---
+
+## 10. มาตรฐาน Production-grade
+
+ทุก Code PR (ขั้น 6) ต้องผ่าน gate เหล่านี้ก่อนมนุษย์จะ merge:
+
+| หมวด | เกณฑ์ |
+|---|---|
+| **Security** | ผ่าน security scan (dependency, secret, SAST) · ไม่มี secret ใน repo · ตาม least-privilege |
+| **Quality** | เทส AC ผ่านทั้งหมด (TDD) · lint/format ผ่าน · โค้ด reuse ได้และมีเทสครอบ |
+| **Reviewability** | PR ขนาดพอเหมาะ · แตก ticket เมื่อจำเป็น · มีคำอธิบายเชื่อมโยงกับ AC |
+| **Traceability** | ทุก PR อ้างอิงกลับไปยัง issue และ AC ที่เกี่ยวข้อง |
+
+---
+
+## 11. อ้างอิงและกิตติกรรมประกาศ (References & Acknowledgements)
+
+- แนวคิดและกระบวนการในโปรเจกต์นี้ได้แรงบันดาลใจจากคอร์ส **"Claude Code: Building Faster with AI, from Prototype to Prod"** บน Udemy — ขอบคุณ **Frank Kane**
+- ขอบคุณ **คุณ Kunaruk Osatapirat** (Speaker) สำหรับหัวข้อ **"AI-driven architecture: Designing distributed systems at scale"** ในงาน **AWS Summit Bangkok 2026**
+
+---
+
+<div align="center">
+  <sub>สร้างขึ้นเพื่อสาธิตความสามารถ end-to-end ของ Claude GitHub agent · Human-in-the-loop ทุกขั้นตอน</sub>
+</div>
