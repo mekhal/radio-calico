@@ -213,7 +213,7 @@ aidlc-radiocalico/
 
 | Branch | ความหมาย |
 |---|---|
-| feature branch | ที่ AI เปิด Test PR / Code PR ในแต่ละ loop |
+| feature branch | ที่ AI เปิด Test PR / Code PR ในแต่ละ loop — ต้องระบุ `--base develop` ชัดเจนเสมอ (ห้ามพึ่ง default base branch ซึ่งอาจเป็น `main`) |
 | `develop` | ปลายทางของแต่ละ loop ที่สมบูรณ์ (มนุษย์ merge) |
 | `main` | Production การ merge จาก `develop` → `main` คือ **prod release** และต้องทำโดย **มนุษย์เท่านั้น** |
 
@@ -228,6 +228,14 @@ aidlc-radiocalico/
 - **Stream URL:** ดูใน [`RadioCalicoStyle/stream_URL.txt`](RadioCalicoStyle/stream_URL.txt)
 
 **Color palette:** Mint `#D8F2D5` · Forest Green `#1F4E23` · Teal `#38A29D` · Calico Orange `#EFA63C` · Charcoal `#231F20`
+
+### Tech stack & การเทส
+
+ตัดสินใจภายใต้ issue #20 (ดู `docs/decisions/`):
+
+- **โค้ดแอป:** HTML + vanilla JavaScript + jQuery อ้างอิง dependency ผ่าน CDN `<script>` เท่านั้น ไม่มี build step ไม่มี `npm install` ถ้ายังเหลือ React อยู่บ้าง จะใช้แค่ `ReactDOM`/`React.createElement` เปล่า ๆ ไม่ติดตั้ง package เพิ่ม
+- **ข้อมูล:** ใช้ `localStorage` เป็น "database"; ไม่มี backend store
+- **เทส:** เขียนเทสแบบ vanilla JavaScript เองภายใต้ `tests/` รันเฉพาะเมื่อเปิดหน้า `tests/test-runner.html` ในเบราว์เซอร์เท่านั้น (ไม่รันตอนเปิดแอป ไม่รันผ่าน `npm test`) และ mock `localStorage` เฉพาะเท่าที่ AC ต้องใช้ หน้า `index.html` มีลิงก์ไปหน้ารายงานผลเทสนี้
 
 ---
 

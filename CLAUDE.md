@@ -63,6 +63,7 @@ The gate block to append verbatim (each command is its own code block so GitHub 
 - **Missed functionality becomes a NEW issue** — never expand scope inside the current loop. Keep the focus on closing the current issue.
 - On step-7 rework requests, **loop back to step 6** (fix the code) and open a new Code PR; do not reopen the whole loop.
 - `develop` → `main` is a **prod release and is human-only**. Never open or merge a PR into `main`.
+- **Always explicitly set the PR base branch to `develop`** when opening a Test PR or Code PR (e.g. `gh pr create --base develop`) — never rely on the default base branch, which may be `main`. See `docs/decisions/2026-07-12-pr-base-branch-must-be-develop.md`.
 
 ## Operating rules (imperative)
 
@@ -109,6 +110,15 @@ A Code PR is not done until all of these hold:
 ### Ask when in doubt
 
 Before a human approves at any gate, if you have any doubt, **ask the human to clarify first** — do not assume.
+
+## Tech stack
+
+Decided under issue #20 (see `docs/decisions/2026-07-12-tech-stack-vanilla-js-jquery.md`):
+
+- **App code:** HTML + vanilla JavaScript + jQuery. No build step, no bundler. If any React remains, it is limited to bare `ReactDOM`/`React.createElement` with no extra npm packages and no JSX/Babel transform.
+- **Dependencies:** CDN `<script>` references only — the app never runs `npm install`.
+- **Data:** `localStorage` is the "database"; there is no backend/server-side store.
+- **Tests:** hand-written vanilla JavaScript (no Jest/npm test framework) under `tests/`. If a test needs "the database," mock `localStorage` — only as far as the AC under test requires. Tests run only when `tests/test-runner.html` is opened directly in a browser (never on app load, never via an `npm test` script); `index.html` links to that report page. See `docs/decisions/2026-07-12-testing-framework-vanilla-runner.md` and `tests/README.md`.
 
 ## Skills
 

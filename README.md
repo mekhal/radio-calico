@@ -213,7 +213,7 @@ aidlc-radiocalico/
 
 | Branch | Meaning |
 |---|---|
-| feature branch | Where the AI opens the Test PR / Code PR for each loop |
+| feature branch | Where the AI opens the Test PR / Code PR for each loop — always with an explicit `--base develop` (never rely on the default base branch, which may be `main`) |
 | `develop` | The destination of each completed loop (merged by a human) |
 | `main` | Production merging `develop` → `main` is a **prod release** and must be done by a **human only** |
 
@@ -228,6 +228,14 @@ The sample product used for the demo is **Radio Calico** a high-quality, ad-free
 - **Stream URL:** see [`RadioCalicoStyle/stream_URL.txt`](RadioCalicoStyle/stream_URL.txt)
 
 **Color palette:** Mint `#D8F2D5` · Forest Green `#1F4E23` · Teal `#38A29D` · Calico Orange `#EFA63C` · Charcoal `#231F20`
+
+### Tech stack & testing
+
+Decided under issue #20 (see `docs/decisions/`):
+
+- **App code:** HTML + vanilla JavaScript + jQuery, CDN `<script>` dependencies only — no build step, no `npm install`. If any React remains, it's limited to bare `ReactDOM`/`React.createElement`, no extra packages.
+- **Data:** `localStorage` acts as the "database"; no backend store.
+- **Tests:** hand-written vanilla JavaScript under `tests/`, run only by opening `tests/test-runner.html` in a browser (never on app load, never via `npm test`); mock `localStorage` where a test needs "the database." `index.html` links to the test report page.
 
 ---
 
