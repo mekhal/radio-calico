@@ -213,7 +213,7 @@ aidlc-radiocalico/
 
 | Branch | Meaning |
 |---|---|
-| feature branch | Where the AI opens the Test PR / Code PR for each loop |
+| feature branch | Where the AI opens the Test PR / Code PR for each loop — always with an explicit `--base develop` (never rely on the default base branch, which may be `main`) |
 | `develop` | The destination of each completed loop (merged by a human) |
 | `main` | Production merging `develop` → `main` is a **prod release** and must be done by a **human only** |
 

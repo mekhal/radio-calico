@@ -213,7 +213,7 @@ aidlc-radiocalico/
 
 | Branch | ความหมาย |
 |---|---|
-| feature branch | ที่ AI เปิด Test PR / Code PR ในแต่ละ loop |
+| feature branch | ที่ AI เปิด Test PR / Code PR ในแต่ละ loop — ต้องระบุ `--base develop` ชัดเจนเสมอ (ห้ามพึ่ง default base branch ซึ่งอาจเป็น `main`) |
 | `develop` | ปลายทางของแต่ละ loop ที่สมบูรณ์ (มนุษย์ merge) |
 | `main` | Production การ merge จาก `develop` → `main` คือ **prod release** และต้องทำโดย **มนุษย์เท่านั้น** |
 
