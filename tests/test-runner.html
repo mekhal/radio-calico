@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Radio Calico — Test Report</title>
+    <style>
+      body {
+        font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #f5eada;
+        color: #231f20;
+        margin: 0;
+        padding: 24px;
+      }
+      h1 {
+        font-family: "Montserrat", sans-serif;
+        color: #1f4e23;
+      }
+      #summary {
+        font-weight: 600;
+        margin-bottom: 16px;
+      }
+      ul {
+        list-style: none;
+        padding: 0;
+      }
+      li {
+        padding: 8px 12px;
+        border-radius: 4px;
+        margin-bottom: 4px;
+      }
+      li.pass {
+        background: #d8f2d5;
+      }
+      li.fail {
+        background: #f8d7da;
+      }
+      li .error {
+        display: block;
+        font-size: 0.875rem;
+        color: #231f20;
+        margin-top: 4px;
+      }
+      /* Test fixtures render off-screen so the report stays readable. */
+      #fixtures {
+        position: absolute;
+        top: -10000px;
+        left: -10000px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Radio Calico — Test Report</h1>
+    <p id="summary">Running tests…</p>
+    <ul id="results"></ul>
+    <div id="fixtures"></div>
+
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script src="assert.js"></script>
+    <script src="mock-hls.js"></script>
+    <script src="load-app.js"></script>
+
+    <script src="hero-listen-now-control.test.js"></script>
+
+    <script>
+      (async function () {
+        await window.TestHarness.allSettled();
+        const results = window.TestHarness.getResults();
+        const list = document.getElementById("results");
+        const passed = results.filter((r) => r.passed).length;
+
+        results.forEach((result) => {
+          const item = document.createElement("li");
+          item.className = result.passed ? "pass" : "fail";
+          item.textContent = `${result.passed ? "✓" : "✗"} ${result.name}`;
+          if (!result.passed) {
+            const error = document.createElement("span");
+            error.className = "error";
+            error.textContent = result.error;
+            item.appendChild(error);
+          }
+          list.appendChild(item);
+        });
+
+        document.getElementById("summary").textContent =
+          `${passed} / ${results.length} passed`;
+      })();
+    </script>
+  </body>
+</html>
