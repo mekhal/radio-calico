@@ -3,7 +3,9 @@
  * AC covered:
  *   - `data-theme` defaults to dark; a toggle switch flips to light and back.
  *   - Footer includes a disclaimer + link to https://www.radio-calico.com/.
- *   - Footer links to the Test Report page (tests/test-runner.html).
+ *   - Footer has a Test Report control that opens the on-demand test modal
+ *     (issue #41 rewrote this from a link to a button; see
+ *     tests/test-report-modal.test.js for the modal's own behavior).
  * These fail today (RED) — app.js has no theme toggle or footer yet.
  * See tests/README.md for how to run this suite.
  */
@@ -96,14 +98,25 @@
       unloadApp(root);
     });
 
-    it("footer links to the Test Report page", async () => {
+    it("footer's Test Report control is a button that opens the test modal", async () => {
       window.installMockHls();
       const root = await loadApp();
       await nextTick();
 
-      const testReportLink = findFooterTestReportLink(root);
-      expect(testReportLink).toBeTruthy();
-      expect(testReportLink.getAttribute("href")).toContain("test-runner.html");
+      const testReportButton = findFooterTestReportLink(root);
+      expect(testReportButton).toBeTruthy();
+      expect(testReportButton.tagName).toBe("BUTTON");
+      expect(testReportButton.hasAttribute("href")).toBeFalsy();
+
+      expect(document.querySelector('[data-testid="test-report-modal"]')).toBeFalsy();
+
+      testReportButton.click();
+      await nextTick();
+
+      expect(document.querySelector('[data-testid="test-report-modal"]')).toBeTruthy();
+
+      const closeButton = document.querySelector('[data-testid="test-report-modal-close"]');
+      if (closeButton) closeButton.click();
 
       unloadApp(root);
     });
