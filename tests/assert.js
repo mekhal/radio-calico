@@ -6,6 +6,7 @@
   const results = [];
   const pending = [];
   let currentSuite = "";
+  let queue = Promise.resolve();
 
   function describe(name, fn) {
     const previousSuite = currentSuite;
@@ -16,7 +17,7 @@
 
   function it(name, fn) {
     const fullName = currentSuite ? `${currentSuite} > ${name}` : name;
-    const promise = (async () => {
+    const promise = queue.then(async () => {
       try {
         await fn();
         results.push({ name: fullName, passed: true });
@@ -27,7 +28,8 @@
           error: error && error.message ? error.message : String(error),
         });
       }
-    })();
+    });
+    queue = promise;
     pending.push(promise);
     return promise;
   }
