@@ -27,3 +27,11 @@ Acceptance Criteria under test requires, nothing extra.
 
 Open `tests/test-runner.html` in a browser (e.g. via a static file server, or directly from
 disk). The page runs the suite on load and renders results.
+
+### Doc-content assertions (e.g. `skills-storage-in-repo.test.js`)
+
+A ticket with no app/DOM surface (docs-only or process changes) is still tested per TDD —
+the assertion just reads sibling repo files via `fetch()` and checks their text instead of
+exercising `app.js`. This means that specific suite needs `test-runner.html` served over
+http(s) (a static file server); opening it via `file://` fails those fetches in most browsers
+regardless of the docs' content, since local-file fetch is blocked by `file://` CORS policy.
