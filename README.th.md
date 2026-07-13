@@ -181,10 +181,10 @@ Integration test: HLS player โหลด stream URL สำเร็จ
 
 - **จับ (Capture):** ทุกครั้งที่มนุษย์ตัดสินใจ (เช่น เลือกแนวทาง, กำหนดกติกา, แก้ทิศทาง plan) จะถูกบันทึกไว้ใน decision log
 - **กลั่น (Distill):** การตัดสินใจที่เกิดซ้ำ/มีคุณค่า ถูกเขียนเป็น skill
-- **เก็บ (Store):** skill ถูกเก็บไว้ใน **private skills repo แยกต่างหาก** → [`mekhal/claudeskill`](https://github.com/mekhal/claudeskill) *(private)*
+- **เก็บ (Store):** skill ถูกเก็บไว้ใน **`.claude/skills/` ของ repo นี้เอง** — ไม่มี skills repo แยกต่างหากอีกต่อไป
 - **เรียกใช้ (Reuse):** agent เรียก skill เหล่านี้ในรอบถัดไป ทำให้ทำงานได้ดีขึ้นและสอดคล้องกับการตัดสินใจเดิมของมนุษย์
 
-> **ทำไมต้องแยก repo?** repo demo นี้เป็นสาธารณะเพื่อโชว์กระบวนการ ส่วน skills เป็นสินทรัพย์เฉพาะทีมจึงเก็บใน private repo และดึงมาใช้ตอน agent ทำงาน
+> **ทำไมเก็บใน repo เดียวกัน?** repo นี้มีไว้เพื่อสาธิตกระบวนการ AI-DLC แบบครบวงจร skills จึงสะสมอยู่ใน repo เดียวกับกระบวนการที่สร้างมันขึ้นมา แทนที่จะแยก checkout ต่างหาก
 
 ---
 
@@ -207,7 +207,7 @@ aidlc-radiocalico/
 └─ RadioCalicoStyle/             ← brand assets + style guide (มีอยู่แล้ว)
 ```
 
-> **Skills** ไม่ได้อยู่ใน repo นี้ เก็บแยกใน [`mekhal/claudeskill`](https://github.com/mekhal/claudeskill) *(private)*
+> **Skills** อยู่ใน repo นี้ ที่ `.claude/skills/<kebab-name>/SKILL.md`
 
 ### Branching
 

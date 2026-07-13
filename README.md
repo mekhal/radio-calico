@@ -181,10 +181,10 @@ The heart of making the agent "keep getting better" is turning **human decisions
 
 - **Capture:** Every time a human decides (choosing an approach, setting a rule, redirecting a plan), it is recorded in the decision log.
 - **Distill:** Recurring/valuable decisions are written up as skills.
-- **Store:** Skills live in a **separate private skills repo** → [`mekhal/claudeskill`](https://github.com/mekhal/claudeskill) *(private)*.
+- **Store:** Skills live in **this repo's own `.claude/skills/`** — there is no separate skills repo.
 - **Reuse:** The agent invokes these skills in later loops, working better and staying consistent with the human's prior decisions.
 
-> **Why a separate repo?** This demo repo is public to showcase the process, while skills are team-specific assets, so they live in a private repo and are pulled in when the agent works.
+> **Why in-repo?** This repo exists to demonstrate the AI-DLC loop end to end, so skills accumulate alongside the process that produced them instead of in a separate checkout.
 
 ---
 
@@ -207,7 +207,7 @@ aidlc-radiocalico/
 └─ RadioCalicoStyle/             ← brand assets + style guide (already present)
 ```
 
-> **Skills** do not live in this repo they are stored separately in [`mekhal/claudeskill`](https://github.com/mekhal/claudeskill) *(private)*.
+> **Skills** live in this repo under `.claude/skills/<kebab-name>/SKILL.md`.
 
 ### Branching
 
