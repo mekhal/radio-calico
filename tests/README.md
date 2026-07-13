@@ -16,9 +16,12 @@ harness:
   dependencies, a mocked `window.Hls`, and every `tests/*.test.js` file, then renders a
   pass/fail list on the page.
 
-**Tests run only when `tests/test-runner.html` is opened directly in a browser** — never
-automatically when `index.html` loads, and never via an `npm test` script. `index.html` links to
-this page (e.g. from the footer) so a reviewer can check results without any local install step.
+**Tests run only on demand** — never automatically when `index.html` loads, and never via an
+`npm test` script. `index.html`'s footer has a "Test Report" button (issue #41) that opens an
+in-app modal and runs the same suite on demand, injecting the harness/fixture DOM directly into
+the page (no `<iframe>`) so a reviewer can check results without any local install step.
+`tests/test-runner.html` still runs the full suite on load and remains the fallback/CI entry
+point.
 
 If a test needs "the database," it mocks `localStorage` directly — only as far as the
 Acceptance Criteria under test requires, nothing extra.
