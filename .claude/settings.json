@@ -3,7 +3,8 @@
     "allow": [
       "Bash(gh pr:*)",
       "Bash(gh issue:*)",
-      "Bash(git:*)"
+      "Bash(git:*)",
+      "Bash(write:*)"
     ]
   }
 }
