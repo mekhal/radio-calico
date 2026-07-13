@@ -33,7 +33,7 @@
   }
 
   function findListenButton(root) {
-    return root.querySelector("button");
+    return root.querySelector('[data-testid="listen-button"]');
   }
 
   describe("Hero Listen Now / playback control (issue #20, Ticket A)", () => {
@@ -81,7 +81,13 @@
       expect(audio).toBeTruthy();
       expect(audio.hasAttribute("controls")).toBeFalsy();
       expect(audio.hasAttribute("autoplay")).toBeFalsy();
-      expect(root.querySelectorAll("button").length).toBe(1);
+
+      // Scoped to exclude the footer's Test Report control (issue #41), which
+      // is a legitimate second <button> unrelated to playback.
+      const playbackButtons = Array.from(root.querySelectorAll("button")).filter(
+        (button) => !button.closest('[data-testid="footer"]')
+      );
+      expect(playbackButtons.length).toBe(1);
 
       unloadApp(root);
     });

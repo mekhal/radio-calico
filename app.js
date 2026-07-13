@@ -25,6 +25,212 @@
     document.documentElement.setAttribute("data-theme", theme);
   }
 
+  // Issue #41: on-demand Test Report modal. Runs the suite in-DOM (no
+  // <iframe>) inside an off-screen fixtures container, distinct from the
+  // live app's #root. Guarded by a document-wide flag because the suite
+  // itself includes theme-toggle-footer.test.js, whose own test clicks this
+  // same control — without the guard, that would recursively fetch and
+  // re-run the whole suite from inside itself.
+  const TEST_REPORT_SUITE_FILES = [
+    "tests/mock-hls.js",
+    "tests/load-app.js",
+    "tests/harness-serialization.test.js",
+    "tests/hero-listen-now-control.test.js",
+    "tests/status-indicators-error-recovery.test.js",
+    "tests/theme-toggle-footer.test.js",
+  ];
+
+  async function fetchAndInjectScript(path) {
+    const response = await fetch(path);
+    const source = await response.text();
+    const script = document.createElement("script");
+    script.textContent = source;
+    document.body.appendChild(script);
+    document.body.removeChild(script);
+  }
+
+  function renderTestReportResults(summaryEl, listEl, results) {
+    listEl.innerHTML = "";
+    results.forEach((result) => {
+      const item = document.createElement("li");
+      item.className = result.passed ? "pass" : "fail";
+      item.textContent = `${result.passed ? "✓" : "✗"} ${result.name}`;
+      Object.assign(item.style, {
+        padding: "8px 12px",
+        borderRadius: "4px",
+        marginBottom: "4px",
+        background: result.passed ? "rgba(216, 242, 213, 0.15)" : "rgba(239, 166, 60, 0.2)",
+        borderLeft: `3px solid ${result.passed ? "#D8F2D5" : "#EFA63C"}`,
+      });
+      if (!result.passed) {
+        const error = document.createElement("span");
+        error.className = "error";
+        error.textContent = result.error;
+        Object.assign(error.style, {
+          display: "block",
+          fontSize: "0.875rem",
+          marginTop: "4px",
+          color: "#F5EADA",
+        });
+        item.appendChild(error);
+      }
+      listEl.appendChild(item);
+    });
+
+    const passed = results.filter((result) => result.passed).length;
+    summaryEl.textContent = `${passed} / ${results.length} passed`;
+  }
+
+  async function runTestReportSuite(summaryEl, listEl, isClosed) {
+    if (window.__radioCalicoTestReportRunning) {
+      summaryEl.textContent = "A test run is already in progress.";
+      return;
+    }
+    window.__radioCalicoTestReportRunning = true;
+    window.__APP_JS_PATH__ = "app.js";
+    try {
+      if (isClosed()) return;
+      await fetchAndInjectScript("tests/assert.js");
+
+      for (const file of TEST_REPORT_SUITE_FILES) {
+        if (isClosed()) return;
+        await fetchAndInjectScript(file);
+      }
+
+      if (isClosed()) return;
+      await window.TestHarness.allSettled();
+      if (isClosed()) return;
+
+      renderTestReportResults(summaryEl, listEl, window.TestHarness.getResults());
+    } catch (_error) {
+      if (!isClosed()) summaryEl.textContent = "Test run failed to complete.";
+    } finally {
+      window.__radioCalicoTestReportRunning = false;
+    }
+  }
+
+  function openTestReportModal(trigger) {
+    let closed = false;
+    const isClosed = () => closed;
+
+    const fixtures = document.createElement("div");
+    fixtures.id = "fixtures";
+    fixtures.dataset.testid = "test-report-fixtures";
+    Object.assign(fixtures.style, { position: "absolute", top: "-10000px", left: "-10000px" });
+
+    const backdrop = document.createElement("div");
+    backdrop.dataset.testid = "test-report-modal-backdrop";
+    Object.assign(backdrop.style, {
+      position: "fixed",
+      top: "0",
+      left: "0",
+      right: "0",
+      bottom: "0",
+      background: "rgba(0, 0, 0, 0.6)",
+      zIndex: "1000",
+    });
+
+    const modal = document.createElement("div");
+    modal.dataset.testid = "test-report-modal";
+    modal.setAttribute("role", "dialog");
+    modal.setAttribute("aria-modal", "true");
+    modal.setAttribute("aria-label", "Test Report");
+    modal.tabIndex = -1;
+    Object.assign(modal.style, {
+      position: "fixed",
+      top: "50%",
+      left: "50%",
+      transform: "translate(-50%, -50%)",
+      width: "min(90vw, 640px)",
+      maxHeight: "80vh",
+      overflowY: "auto",
+      background: "#231F20",
+      color: "#FFFFFF",
+      borderRadius: "4px",
+      padding: "1.5rem",
+      zIndex: "1001",
+      fontFamily: '"Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      boxShadow: "0 8px 24px rgba(0, 0, 0, 0.4)",
+    });
+
+    const header = document.createElement("div");
+    Object.assign(header.style, {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: "1rem",
+    });
+
+    const title = document.createElement("h2");
+    title.textContent = "Test Report";
+    Object.assign(title.style, {
+      fontFamily: '"Montserrat", sans-serif',
+      margin: "0",
+      fontSize: "1.5rem",
+    });
+
+    const closeButton = document.createElement("button");
+    closeButton.type = "button";
+    closeButton.dataset.testid = "test-report-modal-close";
+    closeButton.textContent = "✕";
+    closeButton.setAttribute("aria-label", "Close");
+    Object.assign(closeButton.style, {
+      background: "transparent",
+      color: "#FFFFFF",
+      border: "2px solid #FFFFFF",
+      borderRadius: "4px",
+      cursor: "pointer",
+      padding: "0.25rem 0.6rem",
+    });
+
+    header.appendChild(title);
+    header.appendChild(closeButton);
+
+    const summary = document.createElement("p");
+    summary.dataset.testid = "test-report-summary";
+    summary.textContent = "Running tests…";
+    Object.assign(summary.style, { fontWeight: "600", marginBottom: "1rem" });
+
+    const results = document.createElement("ul");
+    results.dataset.testid = "test-report-results";
+    Object.assign(results.style, { listStyle: "none", padding: "0", margin: "0" });
+
+    modal.appendChild(header);
+    modal.appendChild(summary);
+    modal.appendChild(results);
+
+    function closeModal() {
+      if (closed) return;
+      closed = true;
+      // Clear the reentrancy flag synchronously on close (rather than only
+      // in runTestReportSuite's finally) so re-opening immediately starts a
+      // fresh run instead of racing the previous run's in-flight fetch to
+      // notice it was closed.
+      window.__radioCalicoTestReportRunning = false;
+      document.removeEventListener("keydown", onKeyDown);
+      if (modal.parentNode) modal.parentNode.removeChild(modal);
+      if (backdrop.parentNode) backdrop.parentNode.removeChild(backdrop);
+      if (fixtures.parentNode) fixtures.parentNode.removeChild(fixtures);
+      if (trigger && typeof trigger.focus === "function") trigger.focus();
+    }
+
+    function onKeyDown(event) {
+      if (event.key === "Escape") closeModal();
+    }
+
+    backdrop.addEventListener("click", closeModal);
+    closeButton.addEventListener("click", closeModal);
+    document.addEventListener("keydown", onKeyDown);
+
+    document.body.appendChild(backdrop);
+    document.body.appendChild(modal);
+    document.body.appendChild(fixtures);
+
+    modal.focus();
+
+    runTestReportSuite(summary, results, isClosed);
+  }
+
   function initApp() {
     ensureThemeStyles();
     setTheme("dark");
@@ -89,15 +295,25 @@
     siteLink.href = "https://www.radio-calico.com/";
     siteLink.textContent = "radio-calico.com";
 
-    const testReportLink = document.createElement("a");
-    testReportLink.dataset.testid = "footer-test-report-link";
-    testReportLink.href = "tests/test-runner.html";
-    testReportLink.textContent = "Test Report";
-    testReportLink.style.marginLeft = "1rem";
+    const testReportButton = document.createElement("button");
+    testReportButton.type = "button";
+    testReportButton.dataset.testid = "footer-test-report-link";
+    testReportButton.textContent = "Test Report";
+    Object.assign(testReportButton.style, {
+      marginLeft: "1rem",
+      background: "transparent",
+      border: "none",
+      padding: "0",
+      font: "inherit",
+      color: "#38A29D",
+      textDecoration: "underline",
+      cursor: "pointer",
+    });
+    testReportButton.addEventListener("click", () => openTestReportModal(testReportButton));
 
     footer.appendChild(disclaimer);
     footer.appendChild(siteLink);
-    footer.appendChild(testReportLink);
+    footer.appendChild(testReportButton);
 
     const status = document.createElement("p");
     status.textContent = "Status: loading";
