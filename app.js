@@ -31,14 +31,34 @@
   // itself includes theme-toggle-footer.test.js, whose own test clicks this
   // same control — without the guard, that would recursively fetch and
   // re-run the whole suite from inside itself.
-  const TEST_REPORT_SUITE_FILES = [
-    "tests/mock-hls.js",
-    "tests/load-app.js",
-    "tests/harness-serialization.test.js",
-    "tests/hero-listen-now-control.test.js",
-    "tests/status-indicators-error-recovery.test.js",
-    "tests/theme-toggle-footer.test.js",
+  //
+  // Issue #54: unlike tests/test-runner.html, index.html never loads
+  // React/ReactDOM/Babel — tests/load-app.js's loadApp() needs window.Babel
+  // to mount app.js, so those CDN deps must be loaded here before the suite
+  // runs. Pinned to the same major versions tests/test-runner.html uses.
+  const TEST_REPORT_CDN_DEPS = [
+    { isLoaded: () => Boolean(window.React), src: "https://unpkg.com/react@18/umd/react.production.min.js" },
+    { isLoaded: () => Boolean(window.ReactDOM), src: "https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" },
+    { isLoaded: () => Boolean(window.Babel), src: "https://unpkg.com/@babel/standalone@7/babel.min.js" },
   ];
+
+  function loadScriptTag(src) {
+    return new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = src;
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
+      document.head.appendChild(script);
+    });
+  }
+
+  async function ensureTestReportCdnDeps() {
+    for (const dep of TEST_REPORT_CDN_DEPS) {
+      if (!dep.isLoaded()) {
+        await loadScriptTag(dep.src);
+      }
+    }
+  }
 
   async function fetchAndInjectScript(path) {
     const response = await fetch(path);
@@ -90,9 +110,17 @@
     window.__APP_JS_PATH__ = "app.js";
     try {
       if (isClosed()) return;
+      await ensureTestReportCdnDeps();
+      if (isClosed()) return;
       await fetchAndInjectScript("tests/assert.js");
+      if (isClosed()) return;
+      await fetchAndInjectScript("tests/test-report-suite-files.js");
 
-      for (const file of TEST_REPORT_SUITE_FILES) {
+      const suiteFiles = ["tests/mock-hls.js", "tests/load-app.js"].concat(
+        window.TEST_REPORT_SUITE_FILES.map((file) => `tests/${file}`)
+      );
+
+      for (const file of suiteFiles) {
         if (isClosed()) return;
         await fetchAndInjectScript(file);
       }

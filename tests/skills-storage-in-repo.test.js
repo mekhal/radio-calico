@@ -9,9 +9,21 @@
  * tests/test-runner.html to be served over http(s) (a static file server) —
  * opening it via file:// fails these fetches in most browsers regardless of
  * the docs, since local-file fetch is blocked by file:// CORS policy.
+ *
+ * Issue #54: this file also runs inside the footer's on-demand Test Report
+ * modal, which injects it from index.html at the repo root rather than from
+ * tests/test-runner.html — "../CLAUDE.md" would resolve above the repo root
+ * in that context. window.__APP_JS_PATH__ is the same signal
+ * tests/load-app.js already uses to tell the two contexts apart (app.js sets
+ * it to "app.js" before running the suite; test-runner.html never sets it),
+ * so repoFilePath() uses it to pick the right prefix.
  */
 (function () {
   const { describe, it, expect } = window.TestHarness;
+
+  function repoFilePath(name) {
+    return window.__APP_JS_PATH__ ? name : `../${name}`;
+  }
 
   async function readRepoFile(relativePath) {
     const response = await fetch(relativePath);
@@ -23,17 +35,17 @@
 
   describe("Skill storage lives in this repo, not mekhal/claudeskill (issue #43)", () => {
     it("CLAUDE.md no longer references the external claudeskill repo", async () => {
-      const claudeMd = await readRepoFile("../CLAUDE.md");
+      const claudeMd = await readRepoFile(repoFilePath("CLAUDE.md"));
       expect(claudeMd.includes("mekhal/claudeskill")).toBeFalsy();
     });
 
     it("CLAUDE.md documents skills as stored under this repo's own .claude/skills/<kebab-name>/SKILL.md", async () => {
-      const claudeMd = await readRepoFile("../CLAUDE.md");
+      const claudeMd = await readRepoFile(repoFilePath("CLAUDE.md"));
       expect(claudeMd.includes(".claude/skills/<kebab-name>/SKILL.md")).toBeTruthy();
     });
 
     it("CLAUDE.md's Adding a skill section documents the write-guard workaround", async () => {
-      const claudeMd = await readRepoFile("../CLAUDE.md");
+      const claudeMd = await readRepoFile(repoFilePath("CLAUDE.md"));
       const section = claudeMd.slice(claudeMd.indexOf("### Adding a skill"));
       expect(
         section.includes("write-guard") || section.includes("write guard")
@@ -42,34 +54,34 @@
     });
 
     it("CLAUDE.md's close flow lists only new-skill candidates surfaced by the issue's own work", async () => {
-      const claudeMd = await readRepoFile("../CLAUDE.md");
+      const claudeMd = await readRepoFile(repoFilePath("CLAUDE.md"));
       const section = claudeMd.slice(claudeMd.indexOf("### Adding a skill"));
       expect(section.toLowerCase().includes("surfaced by")).toBeTruthy();
     });
 
     it("README.md no longer references the external claudeskill repo", async () => {
-      const readme = await readRepoFile("../README.md");
+      const readme = await readRepoFile(repoFilePath("README.md"));
       expect(readme.includes("mekhal/claudeskill")).toBeFalsy();
     });
 
     it("README.md documents skills as stored in this repo's .claude/skills/", async () => {
-      const readme = await readRepoFile("../README.md");
+      const readme = await readRepoFile(repoFilePath("README.md"));
       expect(readme.includes(".claude/skills/")).toBeTruthy();
     });
 
     it("README.th.md no longer references the external claudeskill repo", async () => {
-      const readmeTh = await readRepoFile("../README.th.md");
+      const readmeTh = await readRepoFile(repoFilePath("README.th.md"));
       expect(readmeTh.includes("mekhal/claudeskill")).toBeFalsy();
     });
 
     it("README.th.md documents skills as stored in this repo's .claude/skills/", async () => {
-      const readmeTh = await readRepoFile("../README.th.md");
+      const readmeTh = await readRepoFile(repoFilePath("README.th.md"));
       expect(readmeTh.includes(".claude/skills/")).toBeTruthy();
     });
 
     it("a decision doc records why skill storage moved in-repo", async () => {
       const decisionDoc = await readRepoFile(
-        "../docs/decisions/2026-07-13-skills-storage-move-in-repo.md"
+        repoFilePath("docs/decisions/2026-07-13-skills-storage-move-in-repo.md")
       );
       expect(decisionDoc.trim().length).toBeGreaterThan(0);
     });

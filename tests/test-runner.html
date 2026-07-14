@@ -57,19 +57,27 @@
 
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
 
     <script src="assert.js"></script>
     <script src="mock-hls.js"></script>
     <script src="load-app.js"></script>
 
-    <script src="harness-serialization.test.js"></script>
-    <script src="hero-listen-now-control.test.js"></script>
-    <script src="status-indicators-error-recovery.test.js"></script>
-    <script src="theme-toggle-footer.test.js"></script>
+    <!-- issue #54: the list of "real" test files is shared with app.js's
+         footer modal via test-report-suite-files.js (single source of
+         truth) instead of being hand-duplicated here. -->
+    <script src="test-report-suite-files.js"></script>
+    <script>
+      window.TEST_REPORT_SUITE_FILES.forEach(function (file) {
+        document.write('<script src="' + file + '"><' + "/script>");
+      });
+    </script>
+
+    <!-- Self-referential — each opens the Test Report modal as part of its
+         own test, so they stay out of test-report-suite-files.js to avoid
+         the modal's injected suite recursing into itself. -->
     <script src="load-app-isolation.test.js"></script>
     <script src="test-report-modal.test.js"></script>
-    <script src="skills-storage-in-repo.test.js"></script>
     <script src="test-report-cdn-deps.test.js"></script>
     <script src="test-report-suite-completeness.test.js"></script>
 
