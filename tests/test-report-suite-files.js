@@ -17,5 +17,6 @@
     "status-indicators-error-recovery.test.js",
     "theme-toggle-footer.test.js",
     "skills-storage-in-repo.test.js",
+    "app-mount-scoping.test.js",
   ];
 })(window);
