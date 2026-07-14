@@ -8,6 +8,12 @@
  * looks inside the *current* fixtures container (the last one added to the
  * document, so a container created after test-runner.html's static one takes
  * precedence), never document-wide.
+ *
+ * Issue #54 (bug 3): a live page's own #root (e.g. index.html's static
+ * markup) sits earlier in the document than any fixtures container, so
+ * app.js's initApp() can't just call document.getElementById("root") either —
+ * that would resolve to the live root instead of the one created above.
+ * loadApp() hands the root to initApp() explicitly via window.__APP_ROOT__.
  */
 (function (global) {
   function currentFixturesContainer() {
@@ -24,6 +30,11 @@
     root.id = "root";
     fixtures.appendChild(root);
 
+    // Tell app.js's initApp() exactly which #root to mount into, since a live
+    // page's own #root (e.g. index.html's static markup) would otherwise win
+    // a document-wide getElementById lookup — see issue #54, bug 3.
+    global.__APP_ROOT__ = root;
+
     const response = await fetch(global.__APP_JS_PATH__ || "../app.js");
     const source = await response.text();
     const transformed = window.Babel.transform(source, { presets: ["react"] }).code;
@@ -38,6 +49,7 @@
 
   function unloadApp(root) {
     if (root && root.parentNode) root.parentNode.removeChild(root);
+    if (global.__APP_ROOT__ === root) global.__APP_ROOT__ = undefined;
   }
 
   global.AppTestHelpers = { loadApp, unloadApp };

@@ -263,7 +263,10 @@
     ensureThemeStyles();
     setTheme("dark");
 
-    const root = document.getElementById("root");
+    // Prefer the root tests/load-app.js's loadApp() hands us explicitly —
+    // document.getElementById("root") resolves document-wide and would pick
+    // up a live page's own #root instead (issue #54, bug 3).
+    const root = window.__APP_ROOT__ || document.getElementById("root");
 
     const heading = document.createElement("h1");
     heading.textContent = "Radio Calico";
