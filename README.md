@@ -88,8 +88,8 @@ jobs:
 |---|---|---|---|---|
 | **1** | Human | Open an issue (type: **Story / Improvement / Task**), describe the requirement, and tag `@claude`. | | Issue |
 | **2** | AI | **Before planning**, the agent spawns a **sub-agent** to gather context using the **5 questions** (below) to frame the AC well, then produces a **plan + Acceptance Criteria** that are explicit per plan item. | | Plan + AC (comment) |
-| **3** | Human | Review the plan and AC → if not OK, comment with the fixes / if OK, comment to approve **and specify the unit tests and integration tests wanted** *if the AI has any doubts, it must ask the human to clarify first, before the human approves.* | Approve plan | Approved plan |
-| **4** | AI | Review the plan again, then write **failing tests for the AC only** as approved → open a **Test PR** for review. | | Test PR |
+| **3** | Human | Review the plan and AC → if not OK, comment with the fixes / if OK, comment to approve **and specify the unit tests and integration tests wanted** — **or tell the AI to skip the Test PR** and go straight to the Code PR (step 6). The AI may also propose skipping it, when the step is too complex to test in isolation, genuinely hard to test, or needs a build/scaffold before anything is testable — only the human's explicit answer at this gate makes the skip final. *If the AI has any doubts, it must ask the human to clarify first, before the human approves.* | Approve plan (or waive Test PR) | Approved plan |
+| **4** | AI | Review the plan again, then write **failing tests for the AC only** as approved → open a **Test PR** for review. Skipped if waived at step 3. | | Test PR |
 | **5** | Human | Review and **approve the Test PR**. Once merged, the AI starts step 6. | Approve Test PR | Merged tests |
 | **6** | AI | Write the code per the plan, **reuse-first** → open a **Code PR**. | | Code PR |
 | **7** | Human | Review the code → may request changes / missed functionality becomes a **new issue** / when everything is OK, the human **merges into `develop`** = loop closed. | Merge | Code on `develop` |
@@ -167,7 +167,7 @@ The AI then does **step 4** (Test PR) → Human **approves (step 5)** → AI **s
 - **Tests stick to the AC** no tests beyond the agreed AC scope.
 - **Reuse-first** build reusable code and write unit tests covering the reusable pieces.
 - **Missed work → new issue** don't drag newly found work into the current loop; focus on closing the current issue.
-- **Separate PR types** the Test PR (step 4) and Code PR (step 6) are distinct PRs so review happens in layers.
+- **Separate PR types** the Test PR (step 4) and Code PR (step 6) are distinct PRs so review happens in layers — unless the human explicitly waives the Test PR at step 3; the AI may propose the waiver but never decide it unilaterally.
 
 ---
 
@@ -182,7 +182,7 @@ The heart of making the agent "keep getting better" is turning **human decisions
 - **Capture:** Every time a human decides (choosing an approach, setting a rule, redirecting a plan), it is recorded in the decision log.
 - **Distill:** Recurring/valuable decisions are written up as skills.
 - **Store:** Skills live in **this repo's own `.claude/skills/`** — there is no separate skills repo.
-- **Reuse:** The agent invokes these skills in later loops, working better and staying consistent with the human's prior decisions.
+- **Reuse:** The agent invokes these skills in later loops, working better and staying consistent with the human's prior decisions. It also checks `docs/agent-skills/` for candidates awaiting a human's promotion into `.claude/skills/`, and applies their guidance in the meantime.
 
 > **Why in-repo?** This repo exists to demonstrate the AI-DLC loop end to end, so skills accumulate alongside the process that produced them instead of in a separate checkout.
 
@@ -246,7 +246,7 @@ Every Code PR (step 6) must pass these gates before a human merges:
 | Category | Criteria |
 |---|---|
 | **Security** | Passes security scan (dependency, secret, SAST) · no secrets in the repo · least-privilege |
-| **Quality** | All AC tests pass (TDD) · lint/format clean · code is reusable and covered by tests |
+| **Quality** | All AC tests pass (TDD) · lint/format clean · code is reusable and covered by tests. If the Test PR was waived at step 3, the Code PR must still demonstrate the AC is met by whatever means the human agreed to (e.g. tests bundled into the Code PR, or documented manual verification). |
 | **Reviewability** | Reasonable PR size · split into tickets when needed · description linked to the AC |
 | **Traceability** | Every PR references the related issue and AC |
 

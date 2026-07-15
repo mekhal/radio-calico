@@ -88,8 +88,8 @@ jobs:
 |---|---|---|---|---|
 | **1** | Human | สร้าง issue (type: **Story / Improvement / Task**) ใส่รายละเอียดความต้องการ แล้ว tag `@claude` |  | Issue |
 | **2** | AI | **ก่อนวางแผน** agent สร้าง **sub-agent** ไปหาข้อมูลตามกรอบ **5 คำถาม** (ดูด้านล่าง) เพื่อตีกรอบ AC ให้เหมาะสม จากนั้นสร้าง **plan + Acceptance Criteria** ที่ชัดเจนต่อแต่ละแผน |  | Plan + AC (comment) |
-| **3** | Human | ตรวจ plan และ AC → ถ้าไม่โอเค comment ระบุจุดแก้ / ถ้าโอเค comment อนุมัติ **พร้อมระบุแนว unit test และ integration test ที่ต้องการ** *หาก AI มีจุดสงสัย ต้องถามมนุษย์ให้เคลียร์ก่อน มนุษย์จึงสั่ง approve* | อนุมัติ plan | Approved plan |
-| **4** | AI | review plan อีกครั้ง แล้วเขียน **failing test เฉพาะ AC** ตามที่ approve → เปิด **Test PR** รอ review | | Test PR |
+| **3** | Human | ตรวจ plan และ AC → ถ้าไม่โอเค comment ระบุจุดแก้ / ถ้าโอเค comment อนุมัติ **พร้อมระบุแนว unit test และ integration test ที่ต้องการ** — **หรือสั่งให้ AI ข้าม Test PR** แล้วไปทำ Code PR (ขั้น 6) ต่อเลย AI เองก็เสนอข้าม Test PR ได้เช่นกัน เมื่อขั้นนั้นซับซ้อนเกินกว่าจะเทสแยกได้ เทสยากจริง ๆ หรือต้อง build/scaffold ก่อนถึงจะเทสอะไรได้ — แต่ต้องให้มนุษย์ตอบรับชัดเจนใน gate นี้เท่านั้นถึงจะถือว่าข้ามจริง *หาก AI มีจุดสงสัย ต้องถามมนุษย์ให้เคลียร์ก่อน มนุษย์จึงสั่ง approve* | อนุมัติ plan (หรือสั่งข้าม Test PR) | Approved plan |
+| **4** | AI | review plan อีกครั้ง แล้วเขียน **failing test เฉพาะ AC** ตามที่ approve → เปิด **Test PR** รอ review ข้ามได้ถ้าถูก waive ไว้ในขั้น 3 | | Test PR |
 | **5** | Human | review และ **approve Test PR** เมื่อผ่าน AI จึงเริ่มขั้น 6 | อนุมัติ Test PR | Merged tests |
 | **6** | AI | เขียนโค้ดตาม plan แบบ **reuse-first** → เปิด **Code PR** | | Code PR |
 | **7** | Human | review code → สั่งแก้ได้ / ฟังก์ชันที่ตกหล่นดันเป็น **issue ใหม่** / เมื่อทุกอย่าง OK มนุษย์ **merge เข้า `develop`** จบ loop | merge | Code บน `develop` |
@@ -167,7 +167,7 @@ Integration test: HLS player โหลด stream URL สำเร็จ
 - **เทสยึด AC** ไม่เขียนเทสเกินขอบเขต AC ที่ตกลงกัน
 - **Reuse-first** สร้างโค้ดที่ใช้ซ้ำได้ และเขียน unit test ครอบตัวที่ reuse
 - **งานตกหล่น → issue ใหม่** ไม่ลากงานที่พบเพิ่มเข้ามาใน loop ปัจจุบัน เน้นปิด issue ปัจจุบันให้จบ
-- **แยกชนิด PR** Test PR (ขั้น 4) และ Code PR (ขั้น 6) เป็นคนละ PR เพื่อ review เป็นชั้น ๆ
+- **แยกชนิด PR** Test PR (ขั้น 4) และ Code PR (ขั้น 6) เป็นคนละ PR เพื่อ review เป็นชั้น ๆ — เว้นแต่มนุษย์จะสั่ง waive Test PR ไว้ชัดเจนในขั้น 3 โดย AI เสนอ waive ได้แต่ต้องไม่ตัดสินใจเองฝ่ายเดียว
 
 ---
 
@@ -182,7 +182,7 @@ Integration test: HLS player โหลด stream URL สำเร็จ
 - **จับ (Capture):** ทุกครั้งที่มนุษย์ตัดสินใจ (เช่น เลือกแนวทาง, กำหนดกติกา, แก้ทิศทาง plan) จะถูกบันทึกไว้ใน decision log
 - **กลั่น (Distill):** การตัดสินใจที่เกิดซ้ำ/มีคุณค่า ถูกเขียนเป็น skill
 - **เก็บ (Store):** skill ถูกเก็บไว้ใน **`.claude/skills/` ของ repo นี้เอง** — ไม่มี skills repo แยกต่างหากอีกต่อไป
-- **เรียกใช้ (Reuse):** agent เรียก skill เหล่านี้ในรอบถัดไป ทำให้ทำงานได้ดีขึ้นและสอดคล้องกับการตัดสินใจเดิมของมนุษย์
+- **เรียกใช้ (Reuse):** agent เรียก skill เหล่านี้ในรอบถัดไป ทำให้ทำงานได้ดีขึ้นและสอดคล้องกับการตัดสินใจเดิมของมนุษย์ นอกจากนี้ยังตรวจ `docs/agent-skills/` เพื่อดู skill ฉบับร่างที่รอมนุษย์นำไปใส่ไว้ที่ `.claude/skills/` และนำแนวทางในร่างนั้นมาใช้ระหว่างที่ยังรอการอนุมัติ
 
 > **ทำไมเก็บใน repo เดียวกัน?** repo นี้มีไว้เพื่อสาธิตกระบวนการ AI-DLC แบบครบวงจร skills จึงสะสมอยู่ใน repo เดียวกับกระบวนการที่สร้างมันขึ้นมา แทนที่จะแยก checkout ต่างหาก
 
@@ -246,7 +246,7 @@ aidlc-radiocalico/
 | หมวด | เกณฑ์ |
 |---|---|
 | **Security** | ผ่าน security scan (dependency, secret, SAST) · ไม่มี secret ใน repo · ตาม least-privilege |
-| **Quality** | เทส AC ผ่านทั้งหมด (TDD) · lint/format ผ่าน · โค้ด reuse ได้และมีเทสครอบ |
+| **Quality** | เทส AC ผ่านทั้งหมด (TDD) · lint/format ผ่าน · โค้ด reuse ได้และมีเทสครอบ หากขั้น 3 waive Test PR ไว้ Code PR ยังต้องพิสูจน์ว่าตรง AC ด้วยวิธีที่ตกลงกับมนุษย์ไว้ (เช่น รวมเทสไว้ใน Code PR หรือมีบันทึกการตรวจสอบด้วยมือ) |
 | **Reviewability** | PR ขนาดพอเหมาะ · แตก ticket เมื่อจำเป็น · มีคำอธิบายเชื่อมโยงกับ AC |
 | **Traceability** | ทุก PR อ้างอิงกลับไปยัง issue และ AC ที่เกี่ยวข้อง |
 

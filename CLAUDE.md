@@ -14,8 +14,8 @@ Work is driven by GitHub issues tagged `@claude`, through a 7-step loop with a *
 
 1. Human opens an issue (Story / Improvement / Task).
 2. AI spawns a **sub-agent** to gather context using the 5 questions (What's known / What if / Now what / So what / What's unsaid), then posts a **plan + explicit Acceptance Criteria**. Do not write code or tests here.
-3. Human reviews/approves the plan and specifies the tests. **If you have any doubt, ask the human before they approve** — do not assume.
-4. AI writes **failing tests for the AC only** → opens a **Test PR**. Tests target AC, nothing more.
+3. Human reviews/approves the plan and specifies the tests — **or tells the agent to skip the Test PR** (step 4) and go straight to the Code PR (step 6). The agent may also propose skipping it, when the step is too complex to test in isolation, genuinely hard to test, or needs a build/scaffold to exist before anything is testable — but only the human's explicit answer at this gate makes the skip final; the agent must never decide this unilaterally. **If you have any doubt, ask the human before they approve** — do not assume.
+4. AI writes **failing tests for the AC only** → opens a **Test PR**. Tests target AC, nothing more. (Skipped if waived at step 3.)
 5. Human approves the Test PR.
 6. AI writes code per the plan (reuse-first) → opens a separate **Code PR**.
 7. Human reviews and merges into `develop`.
@@ -57,7 +57,7 @@ The gate block to append verbatim (each command is its own code block so GitHub 
 ## Hard rules (do not violate)
 
 - **Never merge or approve on your own.** Every merge/approval is a human action.
-- **Test PR and Code PR are separate PRs** (steps 4 and 6). Never combine them.
+- **Test PR and Code PR are separate PRs** (steps 4 and 6). Never combine them, unless the human explicitly waives the Test PR at step 3 (see step 3 above) — the agent may propose the waiver but never decide it unilaterally.
 - **Split large work into multiple tickets** in steps 4 and 6 so a human can actually review each PR. Reviewability is a requirement, not a nicety.
 - **Reuse-first**, and cover reusable pieces with unit tests.
 - **Missed functionality becomes a NEW issue** — never expand scope inside the current loop. Keep the focus on closing the current issue.
@@ -97,7 +97,7 @@ Before producing the plan, the sub-agent gathers context and asks the human usin
 A Code PR is not done until all of these hold:
 
 - **Security:** passes security scan (dependency, secret, SAST); no secrets in the repo; least-privilege permissions.
-- **Quality:** all AC tests pass (TDD); lint/format clean; code is reusable and covered by tests.
+- **Quality:** all AC tests pass (TDD); lint/format clean; code is reusable and covered by tests. If the Test PR was waived at step 3, the Code PR must still demonstrate the AC is met by whatever means the human agreed to at step 3 (e.g. tests bundled into the Code PR, or documented manual verification).
 - **Reviewability:** PR is a reasonable size; split into tickets when needed; description links to the AC.
 - **Traceability:** the PR references the related issue and AC.
 
@@ -159,7 +159,7 @@ When you handle `@claude close`:
 
 ### Using a skill
 
-Skills are stored in this repo's own `.claude/skills/` (source of truth). Before starting any piece of work, check the skills available on the runner and invoke the relevant skill first.
+Skills are stored in this repo's own `.claude/skills/` (source of truth). Before starting any piece of work, check the skills available on the runner and invoke the relevant skill first. Also check `docs/agent-skills/` for skill candidates awaiting a human's promotion to `.claude/skills/` (see the write-guard workaround above) — read and apply their guidance too, since a draft not yet promoted is still a captured human decision.
 
 ## Source of truth & keeping docs in sync
 
