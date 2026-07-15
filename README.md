@@ -182,7 +182,7 @@ The heart of making the agent "keep getting better" is turning **human decisions
 - **Capture:** Every time a human decides (choosing an approach, setting a rule, redirecting a plan), it is recorded in the decision log.
 - **Distill:** Recurring/valuable decisions are written up as skills.
 - **Store:** Skills live in **this repo's own `.claude/skills/`** — there is no separate skills repo.
-- **Reuse:** The agent invokes these skills in later loops, working better and staying consistent with the human's prior decisions.
+- **Reuse:** The agent invokes these skills in later loops, working better and staying consistent with the human's prior decisions. It also checks `docs/skill-drafts/` for candidates awaiting a human's promotion into `.claude/skills/`, and applies their guidance in the meantime.
 
 > **Why in-repo?** This repo exists to demonstrate the AI-DLC loop end to end, so skills accumulate alongside the process that produced them instead of in a separate checkout.
 

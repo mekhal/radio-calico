@@ -159,7 +159,7 @@ When you handle `@claude close`:
 
 ### Using a skill
 
-Skills are stored in this repo's own `.claude/skills/` (source of truth). Before starting any piece of work, check the skills available on the runner and invoke the relevant skill first.
+Skills are stored in this repo's own `.claude/skills/` (source of truth). Before starting any piece of work, check the skills available on the runner and invoke the relevant skill first. Also check `docs/skill-drafts/` for skill candidates awaiting a human's promotion to `.claude/skills/` (see the write-guard workaround above) — read and apply their guidance too, since a draft not yet promoted is still a captured human decision.
 
 ## Source of truth & keeping docs in sync
 
