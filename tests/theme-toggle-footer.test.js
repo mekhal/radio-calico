@@ -3,11 +3,16 @@
  * AC covered:
  *   - `data-theme` defaults to dark; a toggle switch flips to light and back.
  *   - Footer includes a disclaimer + link to https://www.radio-calico.com/.
- *   - Footer has a Test Report control that opens the on-demand test modal
- *     (issue #41 rewrote this from a link to a button; see
- *     tests/test-report-modal.test.js for the modal's own behavior).
  * These fail today (RED) — app.js has no theme toggle or footer yet.
  * See tests/README.md for how to run this suite.
+ *
+ * Issue #54: the "footer's Test Report control opens the modal" test moved to
+ * tests/footer-test-report-button.test.js — it clicks the real footer button,
+ * which opens the on-demand Test Report modal (issue #41) for real. Running
+ * it as part of this file's suite, while itself running inside that same
+ * modal, produced a false failure (the modal was already open), so it's
+ * grouped with the other self-referential test files instead — see
+ * tests/test-report-suite-files.js.
  */
 (function () {
   const { describe, it, expect } = window.TestHarness;
@@ -31,10 +36,6 @@
 
   function findFooterSiteLink(root) {
     return root.querySelector('[data-testid="footer-site-link"]');
-  }
-
-  function findFooterTestReportLink(root) {
-    return root.querySelector('[data-testid="footer-test-report-link"]');
   }
 
   describe("Theme toggle + footer (issue #26, Ticket C)", () => {
@@ -94,29 +95,6 @@
       const siteLink = findFooterSiteLink(root);
       expect(siteLink).toBeTruthy();
       expect(siteLink.getAttribute("href")).toBe("https://www.radio-calico.com/");
-
-      unloadApp(root);
-    });
-
-    it("footer's Test Report control is a button that opens the test modal", async () => {
-      window.installMockHls();
-      const root = await loadApp();
-      await nextTick();
-
-      const testReportButton = findFooterTestReportLink(root);
-      expect(testReportButton).toBeTruthy();
-      expect(testReportButton.tagName).toBe("BUTTON");
-      expect(testReportButton.hasAttribute("href")).toBeFalsy();
-
-      expect(document.querySelector('[data-testid="test-report-modal"]')).toBeFalsy();
-
-      testReportButton.click();
-      await nextTick();
-
-      expect(document.querySelector('[data-testid="test-report-modal"]')).toBeTruthy();
-
-      const closeButton = document.querySelector('[data-testid="test-report-modal-close"]');
-      if (closeButton) closeButton.click();
 
       unloadApp(root);
     });

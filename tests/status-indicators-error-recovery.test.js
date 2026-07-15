@@ -11,6 +11,13 @@
  * These fail today (RED) — app.js has no LIVE/buffering/error UI yet, only a
  * status paragraph and the Ticket A play/pause button. See tests/README.md for
  * how to run this suite.
+ *
+ * Issue #54: this file no longer asserts that clicking Refresh actually calls
+ * reload() — overriding window.location.reload is a browser security
+ * restriction real browsers don't honor consistently, so the assertion was a
+ * false negative (app.js's reload behavior was correct; the test's stub
+ * wasn't reliable). The "shows an error message and a Refresh button" test
+ * below still covers the button rendering with the right label.
  */
 (function () {
   const { describe, it, expect } = window.TestHarness;
@@ -182,30 +189,6 @@
       const refreshButton = findRefreshButton(root);
       expect(isVisible(refreshButton)).toBeTruthy();
       expect((refreshButton.textContent || "").trim().toUpperCase()).toContain("REFRESH");
-
-      unloadApp(root);
-    });
-
-    it("reloads the page when the Refresh button is clicked", async () => {
-      window.installMockHls();
-      const root = await loadApp();
-      await nextTick();
-
-      window.latestHlsInstance().trigger(window.Hls.Events.ERROR, { fatal: true });
-      await nextTick();
-
-      const originalReload = window.location.reload;
-      let reloadCalled = false;
-      window.location.reload = function () {
-        reloadCalled = true;
-      };
-
-      try {
-        findRefreshButton(root).click();
-        expect(reloadCalled).toBeTruthy();
-      } finally {
-        window.location.reload = originalReload;
-      }
 
       unloadApp(root);
     });

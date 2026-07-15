@@ -46,11 +46,11 @@
 
     it("CLAUDE.md's Adding a skill section documents the write-guard workaround", async () => {
       const claudeMd = await readRepoFile(repoFilePath("CLAUDE.md"));
-      const section = claudeMd.slice(claudeMd.indexOf("### Adding a skill"));
+      const section = claudeMd.slice(claudeMd.indexOf("### Adding a skill")).toLowerCase();
       expect(
         section.includes("write-guard") || section.includes("write guard")
       ).toBeTruthy();
-      expect(section.toLowerCase().includes("human")).toBeTruthy();
+      expect(section.includes("human")).toBeTruthy();
     });
 
     it("CLAUDE.md's close flow lists only new-skill candidates surfaced by the issue's own work", async () => {

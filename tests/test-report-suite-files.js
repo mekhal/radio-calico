@@ -6,9 +6,10 @@
  *
  * Deliberately excludes files that open the Test Report modal themselves
  * (tests/test-report-modal.test.js, tests/load-app-isolation.test.js,
- * tests/test-report-cdn-deps.test.js, tests/test-report-suite-completeness.test.js)
+ * tests/test-report-cdn-deps.test.js, tests/test-report-suite-completeness.test.js,
+ * tests/footer-test-report-button.test.js)
  * — including them here would recurse, since their own tests open this very
- * modal. Those four are wired directly into tests/test-runner.html instead.
+ * modal. Those five are wired directly into tests/test-runner.html instead.
  */
 (function (global) {
   global.TEST_REPORT_SUITE_FILES = [
