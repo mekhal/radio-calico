@@ -82,6 +82,13 @@
     <script src="test-report-suite-completeness.test.js"></script>
     <script src="footer-test-report-button.test.js"></script>
 
+    <!-- issue #67, AC2: not app.js interface-function tests, so the footer
+         modal's scoped suite excludes them (test-report-suite-files.js) —
+         wired directly here instead so they still run as part of the full
+         report. -->
+    <script src="harness-serialization.test.js"></script>
+    <script src="skills-storage-in-repo.test.js"></script>
+
     <script>
       (async function () {
         await window.TestHarness.allSettled();
