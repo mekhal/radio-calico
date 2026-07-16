@@ -26,14 +26,25 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Trivy filesystem scan (HTML report)
-        # Tag fix (issue #67 CI failure): trivy-action's release tags are all
-        # v-prefixed (v0.28.0, v0.36.0, ...) — there is no unprefixed "0.28.0"
-        # tag, so the action couldn't resolve.
+        # Version fix (issue #67 CI failures, in order):
+        # 1. Tags are v-prefixed (v0.28.0, v0.36.0, ...) — no unprefixed
+        #    "0.28.0" tag exists, so @0.28.0 couldn't resolve.
+        # 2. @v0.28.0 pins a transitive aquasecurity/setup-trivy tag (v0.2.1)
+        #    that was later deleted upstream; @v0.29.0-v0.31.0 have the same
+        #    problem. v0.32.0+ pin setup-trivy by immutable commit SHA
+        #    instead, so bumping all the way to v0.36.0 (current latest) is
+        #    required, not just adding the "v".
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: fs
           scan-ref: .
           format: template
+          # Relative path fix (issue #67 CI failure): the old container-based
+          # trivy-action baked contrib/html.tpl into the image root, so an
+          # absolute "@/contrib/html.tpl" resolved. v0.36.0 runs as a
+          # binary/composite action with no container filesystem root, and
+          # checks out aquasecurity/trivy's source to resolve the template
+          # shorthand relatively instead.
           template: "@contrib/html.tpl"
           output: trivy-report.html
           # Report-only for now, same reasoning as Mega-Linter's DISABLE_ERRORS.
