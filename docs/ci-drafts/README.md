@@ -29,9 +29,8 @@ Per `CLAUDE.md`'s write-guard note, the Claude agent cannot write under
   actual Pages settings (`build_type: legacy`, `source.branch: main`,
   `source.path: /`).
 - **Report paths match the footer links already in `app.js`:**
-  `reports/lint/megalinter-report.html` and
-  `reports/security/trivy-report.html`, both at the site root so they resolve
-  once published to `main`.
+  `reports/lint/megalinter-report.html` and `reports/security/trivy.sarif`,
+  both at the site root so they resolve once published to `main`.
 - **No infinite loop.** The publish step's commit uses the default
   `GITHUB_TOKEN`, never a PAT or deploy key. GitHub does not trigger further
   workflow runs from a `GITHUB_TOKEN` push by design, so there's no
@@ -76,21 +75,30 @@ stays a trustworthy copy source.
   pin). `v0.32.0`+ pin `setup-trivy` by immutable commit SHA instead, so the
   fix is bumping all the way to `@v0.36.0` (current latest), not just adding
   the `v`.
-- **Trivy, fix 3/3 — `open /contrib/html.tpl: no such file or directory`.**
-  The old container-based `trivy-action` baked `contrib/html.tpl` into the
-  `aquasec/trivy` image root, so an absolute `template: "@/contrib/html.tpl"`
-  resolved. `v0.36.0` runs as a binary/composite action with no container
-  filesystem root — it checks out `aquasecurity/trivy`'s source itself and
-  resolves the template shorthand relatively. Fixed by dropping the leading
-  slash: `template: "@contrib/html.tpl"`.
+- **Trivy, fix 3/3 attempt — `open contrib/html.tpl: no such file or directory`
+  (issue #67, later reopened as issue #87).** The old container-based
+  `trivy-action` baked `contrib/html.tpl` into the `aquasec/trivy` image
+  root, so an absolute `template: "@/contrib/html.tpl"` resolved. `v0.36.0`
+  runs as a binary/composite action with no container filesystem root, and
+  checks out `aquasecurity/trivy`'s source itself to resolve the template
+  shorthand relatively — dropping the leading slash (`template:
+  "@contrib/html.tpl"`) was believed to fix this but was never actually
+  copied into the live `.github/workflows/trivy.yml`, and the relative path
+  still doesn't resolve on the runner regardless. **Issue #87 supersedes this
+  fix**: the `format: template` / `contrib/html.tpl` step is dropped
+  entirely rather than patched further. Trivy now only emits `format: sarif`
+  — a built-in format needing no external template — and the footer's
+  security link (`reports/security/trivy.sarif`) opens that file directly,
+  per the human's step-3 decision on #87 to keep this simple rather than
+  build a custom grouped HTML viewer.
 
 ## What's NOT covered here
 
 These workflow YAML files cannot be exercised by this repo's vanilla test
 runner (`tests/test-runner.html` has no way to run GitHub Actions), so per the
-human's "skip to PR code" instruction on issue #67 there is no separate Test
-PR for this ticket. Verify by: copying the files in, pushing to `develop`, and
-confirming the workflow runs and uploads a report artifact; then, after a
-`develop` → `main` merge, confirming the report lands at
-`reports/lint/megalinter-report.html` / `reports/security/trivy-report.html`
-on `main` and the footer links on the live site resolve.
+human's "skip to PR code" instruction on issues #67 and #87 there is no
+separate Test PR for this ticket. Verify by: copying the files in, pushing to
+`develop`, and confirming the workflow runs and uploads a report artifact;
+then, after a `develop` → `main` merge, confirming the report lands at
+`reports/lint/megalinter-report.html` / `reports/security/trivy.sarif` on
+`main` and the footer links on the live site resolve.

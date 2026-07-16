@@ -1,9 +1,10 @@
 /**
- * Issue #79 (supersedes issue #67's version of this link): footer link now
- * points at GitHub's native Code Scanning Alerts page for this repo instead
- * of the static Trivy HTML report, per the human's review comment on #79 —
- * "ปุ่ม security ให้ลิ้งไปที่ .../security/code-scanning ส่วนลิ้งตั้งชื่อว่า
- * Code Security Audit". Same <a target="_blank"> shape as
+ * Issue #87 (supersedes issue #79's version of this link): footer link now
+ * points directly at the Trivy SARIF report published by CI, instead of
+ * GitHub's native Code Scanning Alerts page. Per the human's step-3
+ * decision on #87 — "ให้ลิ้งไปเปิดไฟล์ sarif เลยแล้วกัน" — this stays a
+ * simple direct link to the raw report file rather than a custom grouped
+ * HTML viewer. Same <a target="_blank"> shape as
  * tests/footer-lint-report-link.test.js, just re-pointed and renamed.
  */
 (function () {
@@ -18,8 +19,8 @@
     return root.querySelector('[data-testid="footer-security-report-link"]');
   }
 
-  describe("Footer security report link (issue #79)", () => {
-    it("is a link to the repo's Code Scanning Alerts page, labeled 'Code Security Audit', that opens in a new tab", async () => {
+  describe("Footer security report link (issue #87)", () => {
+    it("is a link to the published Trivy SARIF report, labeled 'Security Scan Report', that opens in a new tab", async () => {
       window.installMockHls();
       const root = await loadApp();
       await nextTick();
@@ -27,10 +28,8 @@
       const link = findFooterSecurityReportLink(root);
       expect(link).toBeTruthy();
       expect(link.tagName).toBe("A");
-      expect(link.textContent).toBe("Code Security Audit");
-      expect(link.getAttribute("href")).toBe(
-        "https://github.com/mekhal/aidlc-radio-calico/security/code-scanning",
-      );
+      expect(link.textContent).toBe("Security Scan Report");
+      expect(link.getAttribute("href")).toBe("reports/security/trivy.sarif");
       expect(link.getAttribute("target")).toBe("_blank");
       expect(link.getAttribute("rel")).toContain("noopener");
 

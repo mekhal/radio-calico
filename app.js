@@ -397,14 +397,15 @@
       color: "#38A29D",
     });
 
-    // Issue #79: repurposed to link to GitHub's native Code Scanning Alerts
-    // page instead of the static Trivy HTML report (supersedes #67's version).
+    // Issue #87 (supersedes #79's version): repointed to the raw Trivy SARIF
+    // report published by CI, per the human's step-3 decision to keep this
+    // simple for the demo rather than build a custom grouped HTML viewer.
     const securityReportLink = document.createElement("a");
     securityReportLink.dataset.testid = "footer-security-report-link";
-    securityReportLink.href = "https://github.com/mekhal/aidlc-radio-calico/security/code-scanning";
+    securityReportLink.href = "reports/security/trivy.sarif";
     securityReportLink.target = "_blank";
     securityReportLink.rel = "noopener noreferrer";
-    securityReportLink.textContent = "Code Security Audit";
+    securityReportLink.textContent = "Security Scan Report";
     Object.assign(securityReportLink.style, {
       marginLeft: "1rem",
       color: "#38A29D",
