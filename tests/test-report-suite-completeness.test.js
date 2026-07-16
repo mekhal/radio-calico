@@ -1,89 +1,45 @@
 /**
- * Issue #54: app.js's TEST_REPORT_SUITE_FILES (the footer modal's injected
- * suite) and tests/test-runner.html's own <script> list have drifted apart —
- * they're two hand-maintained copies of "which test files are the real
- * suite" instead of one. tests/skills-storage-in-repo.test.js (issue #43)
- * was never added to either, so it has never actually run. This test covers
- * the footer-modal side of that gap: the modal's injected suite must fetch
- * tests/skills-storage-in-repo.test.js like every other real test file.
+ * Issue #67, AC2: the footer's on-demand Test Report modal (app.js) was
+ * scoped down to only app.js's own HTML/DOM interface-function tests —
+ * tests/harness-serialization.test.js (tests the assert.js harness itself)
+ * and tests/skills-storage-in-repo.test.js (doc-content assertions, no
+ * app/DOM behavior) no longer belong there. This supersedes the original
+ * issue #54 version of this file, which asserted the opposite (that the
+ * modal's injected suite fetches skills-storage-in-repo.test.js) — that was
+ * the fix for those two files never running anywhere at all. They still need
+ * to run somewhere, so this now asserts they're wired directly into
+ * tests/test-runner.html's script list instead of the modal's scoped suite.
  *
- * Fails today (RED) — app.js's TEST_REPORT_SUITE_FILES only lists 4 files
- * and does not include it. See tests/README.md.
- *
- * Note: tests/skills-storage-in-repo.test.js and this file are not
- * self-referential (unlike tests/test-report-modal.test.js and
- * tests/load-app-isolation.test.js, which must stay excluded from
- * TEST_REPORT_SUITE_FILES — including them would recurse, since their own
- * tests open this very modal). This file itself opens the modal, so for the
- * same reason it must not be added to TEST_REPORT_SUITE_FILES either — only
- * to tests/test-runner.html's script list.
+ * Note: like the original version, this file itself opens the Test Report
+ * modal, so it stays self-referential — excluded from
+ * tests/test-report-suite-files.js and wired only into tests/test-runner.html
+ * (see the comment there).
  */
 (function () {
   const { describe, it, expect } = window.TestHarness;
-  const { loadApp, unloadApp } = window.AppTestHelpers;
 
-  function nextTick() {
-    return new Promise((resolve) => setTimeout(resolve, 0));
-  }
-
-  function wait(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
-
-  async function waitFor(predicate, { timeout = 10000, interval = 50 } = {}) {
-    const start = Date.now();
-    for (;;) {
-      const value = predicate();
-      if (value) return value;
-      if (Date.now() - start >= timeout) {
-        throw new Error("waitFor: timed out waiting for condition");
-      }
-      await wait(interval);
+  async function readOwnPage() {
+    const response = await fetch("test-runner.html");
+    if (!response.ok) {
+      throw new Error(`Expected to fetch test-runner.html, got HTTP ${response.status}`);
     }
+    return response.text();
   }
 
-  function findFooterTestReportButton(root) {
-    return root.querySelector('[data-testid="footer-test-report-link"]');
-  }
+  describe("Test Report modal scoping (issue #67, AC2)", () => {
+    it("excludes non-interface-function tests from the modal's scoped suite", () => {
+      expect(window.TEST_REPORT_SUITE_FILES.includes("harness-serialization.test.js")).toBeFalsy();
+      expect(window.TEST_REPORT_SUITE_FILES.includes("skills-storage-in-repo.test.js")).toBeFalsy();
+    });
 
-  function spyOnFetch() {
-    const calls = [];
-    const original = window.fetch;
-    window.fetch = function (input) {
-      const url = typeof input === "string" ? input : (input && input.url) || String(input);
-      calls.push(url);
-      return original.apply(this, arguments);
-    };
-    return {
-      matching(pattern) {
-        return calls.filter((url) => pattern.test(url));
-      },
-      restore() {
-        window.fetch = original;
-      },
-    };
-  }
+    it("still wires harness-serialization.test.js directly into test-runner.html", async () => {
+      const html = await readOwnPage();
+      expect(html.includes('<script src="harness-serialization.test.js"></script>')).toBeTruthy();
+    });
 
-  describe("Test Report modal suite completeness (issue #54)", () => {
-    it("fetches tests/skills-storage-in-repo.test.js as part of the injected suite", async () => {
-      window.installMockHls();
-      const root = await loadApp();
-      await nextTick();
-
-      const fetchSpy = spyOnFetch();
-      try {
-        const button = findFooterTestReportButton(root);
-        button.click();
-
-        await waitFor(() => fetchSpy.matching(/skills-storage-in-repo\.test\.js/).length > 0);
-
-        const closeButton = document.querySelector('[data-testid="test-report-modal-close"]');
-        if (closeButton) closeButton.click();
-      } finally {
-        fetchSpy.restore();
-      }
-
-      unloadApp(root);
+    it("still wires skills-storage-in-repo.test.js directly into test-runner.html", async () => {
+      const html = await readOwnPage();
+      expect(html.includes('<script src="skills-storage-in-repo.test.js"></script>')).toBeTruthy();
     });
   });
 })();
