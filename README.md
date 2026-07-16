@@ -213,9 +213,11 @@ aidlc-radiocalico/
 
 | Branch | Meaning |
 |---|---|
-| feature branch | Where the AI opens the Test PR / Code PR for each loop — always with an explicit `--base develop` (never rely on the default base branch, which may be `main`) |
+| feature branch | Where the AI opens the Test PR / Code PR for each loop — always with an explicit `--base develop` (never rely on the default base branch, which may be `main`). Once its PR is open, post follow-ups on that PR (not the parent issue), otherwise the harness spins up a stray duplicate branch |
 | `develop` | The destination of each completed loop (merged by a human) |
 | `main` | Production merging `develop` → `main` is a **prod release** and must be done by a **human only** |
+
+Merging or deleting branches (e.g. consolidating duplicates) is a manual, human-only git operation — the agent can only create and push commits to a branch.
 
 ---
 

@@ -64,6 +64,7 @@ The gate block to append verbatim (each command is its own code block so GitHub 
 - On step-7 rework requests, **loop back to step 6** (fix the code) and open a new Code PR; do not reopen the whole loop.
 - `develop` → `main` is a **prod release and is human-only**. Never open or merge a PR into `main`.
 - **Always explicitly set the PR base branch to `develop`** when opening a Test PR or Code PR (e.g. `gh pr create --base develop`) — never rely on the default base branch, which may be `main`. See `docs/decisions/2026-07-12-pr-base-branch-must-be-develop.md`.
+- **Follow-up changes to an already-open PR must be commented on that PR itself, not on the parent issue.** The harness always creates a brand-new branch when triggered from an issue comment, but pushes directly onto the existing branch when triggered from an open PR's comment — commenting on the issue instead spawns a stray duplicate branch. Merging or deleting branches is outside the agent's capability; if duplicate branches ever need consolidating, the human does that merge/delete manually. See `docs/decisions/2026-07-16-pr-followups-on-pr-not-issue.md`.
 
 ## Operating rules (imperative)
 
@@ -103,9 +104,10 @@ A Code PR is not done until all of these hold:
 
 ### Branching
 
-- **feature branch** — where you open the Test PR / Code PR for each loop.
+- **feature branch** — where you open the Test PR / Code PR for each loop. Once its PR is open, comment on that PR (not the parent issue) for any follow-up changes so commits land on the same branch instead of a new one.
 - **`develop`** — the destination of each completed loop; **a human merges into it**, never you.
 - **`main`** — merging `develop` → `main` is a **production release and is human-only**. Never open or merge a PR into `main`.
+- Merging/deleting branches (e.g. consolidating two duplicate branches) is a git operation the agent cannot perform — it is a manual, human-only action.
 
 ### Ask when in doubt
 
