@@ -1,0 +1,73 @@
+name: Mega-Linter
+
+# Issue #67 — two purposes in one workflow:
+#  - push/PR into `develop`: fast lint feedback while developing. Report-only
+#    (non-blocking) for this first round — see
+#    docs/decisions/2026-07-16-ci-tooling-defaults.md.
+#  - push into `main` (i.e. after a human merges develop -> main, per
+#    CLAUDE.md's "develop -> main is human-only"): re-run and publish the
+#    report by committing it into `main`, since this repo's GitHub Pages is
+#    legacy branch-based (branch `main`, path `/`) with no Actions deploy.
+on:
+  pull_request:
+    branches: [develop]
+  push:
+    branches: [develop, main]
+    paths-ignore:
+      - "reports/**"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mega-linter-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  megalinter:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Mega-Linter
+        uses: oxsecurity/megalinter@v8
+        env:
+          VALIDATE_ALL_CODEBASE: true
+          # Report-only for now — the codebase has never been linted, so the
+          # first run is expected to surface many findings. Revisit making
+          # this blocking as a follow-up issue once findings are triaged.
+          DISABLE_ERRORS: true
+          OUTPUT_FORMAT: html
+
+      - name: Stage report under reports/lint
+        run: |
+          mkdir -p reports/lint
+          cp megalinter-reports/*.html reports/lint/megalinter-report.html
+
+      - name: Upload report as CI artifact (develop feedback)
+        if: github.ref_name == 'develop' || github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: megalinter-report
+          path: reports/lint/megalinter-report.html
+          if-no-files-found: warn
+
+      - name: Publish report to main
+        # Only on a direct push to main (i.e. after a human's develop -> main
+        # merge). Uses the default GITHUB_TOKEN, never a PAT/deploy key: pushes
+        # made with GITHUB_TOKEN do not themselves trigger further workflow
+        # runs, which is what keeps this from looping (push -> CI -> commit ->
+        # push -> CI -> ...). paths-ignore above is a second layer of the same
+        # protection.
+        if: github.ref_name == 'main' && github.event_name == 'push'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add reports/lint/megalinter-report.html
+          if git diff --cached --quiet; then
+            echo "No report changes to commit"
+          else
+            git commit -m "chore: publish Mega-Linter report [skip ci]"
+            git push
+          fi

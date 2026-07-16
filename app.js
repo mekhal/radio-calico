@@ -69,32 +69,73 @@
     document.body.removeChild(script);
   }
 
+  // Issue #67, AC2: each result's name is "<suite> > <case>" (assert.js's
+  // describe/it nesting) — grouped here into a list per suite with a
+  // sub-list per case, so the modal reads as "what's tested" rather than a
+  // flat wall of assertions.
+  function groupResultsBySuite(results) {
+    const groups = [];
+    const groupsBySuite = new Map();
+    results.forEach((result) => {
+      const separatorIndex = result.name.lastIndexOf(" > ");
+      const suite = separatorIndex === -1 ? result.name : result.name.slice(0, separatorIndex);
+      const label = separatorIndex === -1 ? result.name : result.name.slice(separatorIndex + 3);
+      if (!groupsBySuite.has(suite)) {
+        const group = { suite, cases: [] };
+        groupsBySuite.set(suite, group);
+        groups.push(group);
+      }
+      groupsBySuite.get(suite).cases.push({ label, passed: result.passed, error: result.error });
+    });
+    return groups;
+  }
+
   function renderTestReportResults(summaryEl, listEl, results) {
     listEl.innerHTML = "";
-    results.forEach((result) => {
-      const item = document.createElement("li");
-      item.className = result.passed ? "pass" : "fail";
-      item.textContent = `${result.passed ? "✓" : "✗"} ${result.name}`;
-      Object.assign(item.style, {
+
+    groupResultsBySuite(results).forEach((group) => {
+      const suitePassed = group.cases.every((testCase) => testCase.passed);
+
+      const suiteItem = document.createElement("li");
+      suiteItem.className = suitePassed ? "pass" : "fail";
+      Object.assign(suiteItem.style, {
         padding: "8px 12px",
         borderRadius: "4px",
         marginBottom: "4px",
-        background: result.passed ? "rgba(216, 242, 213, 0.15)" : "rgba(239, 166, 60, 0.2)",
-        borderLeft: `3px solid ${result.passed ? "#D8F2D5" : "#EFA63C"}`,
+        background: suitePassed ? "rgba(216, 242, 213, 0.15)" : "rgba(239, 166, 60, 0.2)",
+        borderLeft: `3px solid ${suitePassed ? "#D8F2D5" : "#EFA63C"}`,
       });
-      if (!result.passed) {
-        const error = document.createElement("span");
-        error.className = "error";
-        error.textContent = result.error;
-        Object.assign(error.style, {
-          display: "block",
-          fontSize: "0.875rem",
-          marginTop: "4px",
-          color: "#F5EADA",
-        });
-        item.appendChild(error);
-      }
-      listEl.appendChild(item);
+
+      const suiteLabel = document.createElement("span");
+      suiteLabel.style.fontWeight = "600";
+      suiteLabel.textContent = `${suitePassed ? "✓" : "✗"} ${group.suite}`;
+      suiteItem.appendChild(suiteLabel);
+
+      const caseList = document.createElement("ul");
+      Object.assign(caseList.style, { listStyle: "none", margin: "4px 0 0 1rem", padding: "0" });
+
+      group.cases.forEach((testCase) => {
+        const caseItem = document.createElement("li");
+        caseItem.className = testCase.passed ? "pass" : "fail";
+        caseItem.textContent = `${testCase.passed ? "✓" : "✗"} ${testCase.label}`;
+        Object.assign(caseItem.style, { padding: "2px 0", fontSize: "0.875rem" });
+        if (!testCase.passed) {
+          const error = document.createElement("span");
+          error.className = "error";
+          error.textContent = testCase.error;
+          Object.assign(error.style, {
+            display: "block",
+            fontSize: "0.8125rem",
+            marginTop: "2px",
+            color: "#F5EADA",
+          });
+          caseItem.appendChild(error);
+        }
+        caseList.appendChild(caseItem);
+      });
+
+      suiteItem.appendChild(caseList);
+      listEl.appendChild(suiteItem);
     });
 
     const passed = results.filter((result) => result.passed).length;
@@ -342,9 +383,36 @@
     });
     testReportButton.addEventListener("click", () => openTestReportModal(testReportButton));
 
+    // Issue #67: static reports published by CI (Mega-Linter, Trivy) — unlike
+    // the Test Report modal above, these can only run in CI, so they're plain
+    // links to pre-generated report pages instead of on-demand buttons.
+    const lintReportLink = document.createElement("a");
+    lintReportLink.dataset.testid = "footer-lint-report-link";
+    lintReportLink.href = "reports/lint/megalinter-report.html";
+    lintReportLink.target = "_blank";
+    lintReportLink.rel = "noopener noreferrer";
+    lintReportLink.textContent = "Lint Report";
+    Object.assign(lintReportLink.style, {
+      marginLeft: "1rem",
+      color: "#38A29D",
+    });
+
+    const securityReportLink = document.createElement("a");
+    securityReportLink.dataset.testid = "footer-security-report-link";
+    securityReportLink.href = "reports/security/trivy-report.html";
+    securityReportLink.target = "_blank";
+    securityReportLink.rel = "noopener noreferrer";
+    securityReportLink.textContent = "Security Report";
+    Object.assign(securityReportLink.style, {
+      marginLeft: "1rem",
+      color: "#38A29D",
+    });
+
     footer.appendChild(disclaimer);
     footer.appendChild(siteLink);
     footer.appendChild(testReportButton);
+    footer.appendChild(lintReportLink);
+    footer.appendChild(securityReportLink);
 
     const status = document.createElement("p");
     status.textContent = "Status: loading";

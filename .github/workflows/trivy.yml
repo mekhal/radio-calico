@@ -1,0 +1,64 @@
+name: Trivy Security Scan
+
+# Issue #67 — same two-trigger shape as docs/ci-drafts/mega-linter.yml:
+# develop feedback (non-blocking) + publish to main after a human's
+# develop -> main merge. See docs/decisions/2026-07-16-ci-tooling-defaults.md.
+on:
+  pull_request:
+    branches: [develop]
+  push:
+    branches: [develop, main]
+    paths-ignore:
+      - "reports/**"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: trivy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  trivy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Trivy filesystem scan (HTML report)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: template
+          template: "@/contrib/html.tpl"
+          output: trivy-report.html
+          # Report-only for now, same reasoning as Mega-Linter's DISABLE_ERRORS.
+          exit-code: 0
+
+      - name: Stage report under reports/security
+        run: |
+          mkdir -p reports/security
+          cp trivy-report.html reports/security/trivy-report.html
+
+      - name: Upload report as CI artifact (develop feedback)
+        if: github.ref_name == 'develop' || github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-report
+          path: reports/security/trivy-report.html
+
+      - name: Publish report to main
+        # Same GITHUB_TOKEN-only rule as mega-linter.yml — see that file's
+        # comment for why this doesn't loop.
+        if: github.ref_name == 'main' && github.event_name == 'push'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add reports/security/trivy-report.html
+          if git diff --cached --quiet; then
+            echo "No report changes to commit"
+          else
+            git commit -m "chore: publish Trivy report [skip ci]"
+            git push
+          fi
