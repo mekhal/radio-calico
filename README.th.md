@@ -213,9 +213,11 @@ aidlc-radiocalico/
 
 | Branch | ความหมาย |
 |---|---|
-| feature branch | ที่ AI เปิด Test PR / Code PR ในแต่ละ loop — ต้องระบุ `--base develop` ชัดเจนเสมอ (ห้ามพึ่ง default base branch ซึ่งอาจเป็น `main`) |
+| feature branch | ที่ AI เปิด Test PR / Code PR ในแต่ละ loop — ต้องระบุ `--base develop` ชัดเจนเสมอ (ห้ามพึ่ง default base branch ซึ่งอาจเป็น `main`) เมื่อ PR เปิดแล้ว ให้คอมเมนต์ตามงานต่อที่ตัว PR นั้น (ไม่ใช่ที่ issue ต้นทาง) ไม่เช่นนั้น harness จะสร้าง branch ซ้ำซ้อนขึ้นมาใหม่โดยไม่ตั้งใจ |
 | `develop` | ปลายทางของแต่ละ loop ที่สมบูรณ์ (มนุษย์ merge) |
 | `main` | Production การ merge จาก `develop` → `main` คือ **prod release** และต้องทำโดย **มนุษย์เท่านั้น** |
+
+การ merge หรือลบ branch (เช่น รวม branch ที่ซ้ำซ้อนกัน) เป็นการทำ git ด้วยมือโดยมนุษย์เท่านั้น — agent ทำได้แค่สร้างและ push commit ไปยัง branch เท่านั้น
 
 ---
 

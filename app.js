@@ -353,7 +353,12 @@
     const footer = document.createElement("footer");
     footer.dataset.testid = "footer";
     Object.assign(footer.style, {
-      marginTop: "2rem",
+      position: "fixed",
+      left: "0",
+      bottom: "0",
+      width: "100%",
+      boxSizing: "border-box",
+      margin: "0",
       padding: "1.5rem",
       fontSize: "0.875rem",
     });
@@ -411,11 +416,52 @@
       color: "#38A29D",
     });
 
+    // Ticket A (issue #99): icon-only social links, Font Awesome loaded via
+    // CDN <link> in index.html (AC5). Icon-only per AC4 — the accessible
+    // label comes from `title` (and a matching `aria-label`, since `title`
+    // alone isn't reliably exposed to screen readers).
+    function createFooterIconLink(testid, href, iconClass, label) {
+      const link = document.createElement("a");
+      link.dataset.testid = testid;
+      link.href = href;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.title = label;
+      link.setAttribute("aria-label", label);
+      Object.assign(link.style, {
+        marginLeft: "1rem",
+        color: "#38A29D",
+      });
+
+      const icon = document.createElement("i");
+      icon.className = iconClass;
+      icon.setAttribute("aria-hidden", "true");
+      link.appendChild(icon);
+
+      return link;
+    }
+
+    const githubLink = createFooterIconLink(
+      "footer-github-link",
+      "https://github.com/mekhal/aidlc-radio-calico",
+      "fa-brands fa-github",
+      "GitHub",
+    );
+
+    const linkedinLink = createFooterIconLink(
+      "footer-linkedin-link",
+      "https://www.linkedin.com/in/mekhalomlao/",
+      "fa-brands fa-linkedin",
+      "LinkedIn",
+    );
+
     footer.appendChild(disclaimer);
     footer.appendChild(siteLink);
     footer.appendChild(testReportButton);
     footer.appendChild(lintReportLink);
     footer.appendChild(securityReportLink);
+    footer.appendChild(githubLink);
+    footer.appendChild(linkedinLink);
 
     const status = document.createElement("p");
     status.textContent = "Status: loading";
@@ -540,6 +586,15 @@
     root.appendChild(errorMessage);
     root.appendChild(audio);
     root.appendChild(footer);
+
+    // AC2: the footer is `position: fixed`, so it's taken out of document
+    // flow — body needs matching bottom padding or the fixed footer covers
+    // page content (Listen Now button, theme toggle, live indicator).
+    // Not wired to a `resize` listener: initApp() re-runs in the same live
+    // document every time the footer's own Test Report button is clicked
+    // (issue #41's in-DOM modal), and a `window`-level listener would leak
+    // and keep referencing that earlier, by-then-detached footer.
+    document.body.style.paddingBottom = `${footer.offsetHeight}px`;
 
     let hls;
 
