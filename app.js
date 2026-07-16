@@ -5,11 +5,15 @@
   const HOVER_BACKGROUND = "#38A29D";
 
   const THEME_STYLE_ID = "radio-calico-theme-styles";
+  // Issue #99 (Ticket A): footer is `position: fixed`, so body needs bottom
+  // padding sized for the footer's (rough, pre-Ticket-B) two-row layout —
+  // otherwise page content renders underneath it.
   const THEME_CSS = `
     [data-theme="dark"] body { background: #231F20; color: #FFFFFF; }
     [data-theme="light"] body { background: #F5EADA; color: #231F20; }
-    [data-theme="dark"] footer[data-testid="footer"] { background: #1F4E23; color: #FFFFFF; }
-    [data-theme="light"] footer[data-testid="footer"] { background: #F5EADA; color: #1F4E23; }
+    body { padding-bottom: 5.5rem; }
+    [data-theme="dark"] footer[data-testid="footer"] { background: transparent; color: #FFFFFF; }
+    [data-theme="light"] footer[data-testid="footer"] { background: transparent; color: #1F4E23; }
     footer[data-testid="footer"] a { color: #38A29D; }
   `;
 
@@ -350,29 +354,99 @@
       }
     });
 
+    // Issue #99 (Ticket A): footer is fixed to the viewport bottom, sized
+    // down with a transparent background, and its content wrapped in a
+    // centered container — a rough pass ahead of Ticket B's full layout.
     const footer = document.createElement("footer");
     footer.dataset.testid = "footer";
     Object.assign(footer.style, {
-      marginTop: "2rem",
-      padding: "1.5rem",
-      fontSize: "0.875rem",
+      position: "fixed",
+      left: "0",
+      right: "0",
+      bottom: "0",
+      padding: "0.5rem 1rem",
+      fontSize: "0.8125rem",
+    });
+
+    const footerInner = document.createElement("div");
+    Object.assign(footerInner.style, {
+      maxWidth: "1200px",
+      margin: "0 auto",
     });
 
     const disclaimer = document.createElement("p");
     disclaimer.textContent =
       "Radio Calico is an independent internet radio stream. All music remains the property of its respective owners.";
+    Object.assign(disclaimer.style, { margin: "0 0 0.375rem" });
+
+    const linksRow = document.createElement("div");
+    Object.assign(linksRow.style, {
+      display: "flex",
+      flexWrap: "wrap",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: "0.5rem",
+    });
+
+    // Issue #99, AC3: left-aligned, icon-only (Font Awesome) with a `title`
+    // tooltip carrying the label instead of visible text.
+    function createIconOnlyLink(testid, href, label, iconClass) {
+      const link = document.createElement("a");
+      link.dataset.testid = testid;
+      link.href = href;
+      link.title = label;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      Object.assign(link.style, { color: "inherit", fontSize: "1.125rem" });
+      const icon = document.createElement("i");
+      icon.className = iconClass;
+      icon.setAttribute("aria-hidden", "true");
+      link.appendChild(icon);
+      return link;
+    }
+
+    const leftGroup = document.createElement("div");
+    Object.assign(leftGroup.style, { display: "flex", alignItems: "center", gap: "0.75rem" });
+
+    const githubLink = createIconOnlyLink(
+      "footer-github-link",
+      "https://github.com/mekhal/aidlc-radio-calico",
+      "GitHub",
+      "fa-brands fa-github"
+    );
+    const linkedinLink = createIconOnlyLink(
+      "footer-linkedin-link",
+      "https://www.linkedin.com/in/mekhalomlao/",
+      "LinkedIn",
+      "fa-brands fa-linkedin"
+    );
+    leftGroup.appendChild(githubLink);
+    leftGroup.appendChild(linkedinLink);
+
+    // Issue #99, AC4: right-aligned, each existing link/button keeps its
+    // visible text label with a Font Awesome icon prefixed.
+    function prependIcon(el, iconClass) {
+      const icon = document.createElement("i");
+      icon.className = iconClass;
+      icon.setAttribute("aria-hidden", "true");
+      Object.assign(icon.style, { marginRight: "0.375rem" });
+      el.insertBefore(icon, el.firstChild);
+    }
+
+    const rightGroup = document.createElement("div");
+    Object.assign(rightGroup.style, { display: "flex", flexWrap: "wrap", alignItems: "center", gap: "1rem" });
 
     const siteLink = document.createElement("a");
     siteLink.dataset.testid = "footer-site-link";
     siteLink.href = "https://www.radio-calico.com/";
     siteLink.textContent = "radio-calico.com";
+    prependIcon(siteLink, "fa-solid fa-radio");
 
     const testReportButton = document.createElement("button");
     testReportButton.type = "button";
     testReportButton.dataset.testid = "footer-test-report-link";
     testReportButton.textContent = "Test Report";
     Object.assign(testReportButton.style, {
-      marginLeft: "1rem",
       background: "transparent",
       border: "none",
       padding: "0",
@@ -382,6 +456,7 @@
       cursor: "pointer",
     });
     testReportButton.addEventListener("click", () => openTestReportModal(testReportButton));
+    prependIcon(testReportButton, "fa-solid fa-clipboard-check");
 
     // Issue #67: lint report published by CI (Mega-Linter) — unlike the Test
     // Report modal above, it can only run in CI, so it's a plain link to a
@@ -392,10 +467,8 @@
     lintReportLink.target = "_blank";
     lintReportLink.rel = "noopener noreferrer";
     lintReportLink.textContent = "Lint Report";
-    Object.assign(lintReportLink.style, {
-      marginLeft: "1rem",
-      color: "#38A29D",
-    });
+    Object.assign(lintReportLink.style, { color: "#38A29D" });
+    prependIcon(lintReportLink, "fa-solid fa-broom");
 
     // Issue #87 (supersedes #79's version): repointed to the raw Trivy SARIF
     // report published by CI, per the human's step-3 decision to keep this
@@ -406,16 +479,20 @@
     securityReportLink.target = "_blank";
     securityReportLink.rel = "noopener noreferrer";
     securityReportLink.textContent = "Security Scan Report";
-    Object.assign(securityReportLink.style, {
-      marginLeft: "1rem",
-      color: "#38A29D",
-    });
+    Object.assign(securityReportLink.style, { color: "#38A29D" });
+    prependIcon(securityReportLink, "fa-solid fa-shield-halved");
 
-    footer.appendChild(disclaimer);
-    footer.appendChild(siteLink);
-    footer.appendChild(testReportButton);
-    footer.appendChild(lintReportLink);
-    footer.appendChild(securityReportLink);
+    rightGroup.appendChild(siteLink);
+    rightGroup.appendChild(testReportButton);
+    rightGroup.appendChild(lintReportLink);
+    rightGroup.appendChild(securityReportLink);
+
+    linksRow.appendChild(leftGroup);
+    linksRow.appendChild(rightGroup);
+
+    footerInner.appendChild(disclaimer);
+    footerInner.appendChild(linksRow);
+    footer.appendChild(footerInner);
 
     const status = document.createElement("p");
     status.textContent = "Status: loading";
