@@ -51,6 +51,24 @@ Per `CLAUDE.md`'s write-guard note, the Claude agent cannot write under
 - **Test coverage is intentionally absent** from both drafts — out of scope
   per the issue and `docs/decisions/2026-07-12-testing-framework-vanilla-runner.md`.
 
+## Fixes applied after the first live CI run
+
+The first time these drafts were copied into `.github/workflows/` and run, both
+jobs failed. Both fixes below are applied in this folder's drafts — re-copy
+them into `.github/workflows/` to pick the fixes up.
+
+- **Trivy — `Unable to resolve action 'aquasecurity/trivy-action@0.28.0'`.**
+  The action's release tags are all `v`-prefixed (`v0.28.0`, `v0.36.0`, ...);
+  there is no unprefixed `0.28.0` tag. Fixed by pinning `@v0.28.0` instead.
+- **Mega-Linter — `cp: cannot stat 'megalinter-reports/*.html'`.** Mega-Linter
+  has no built-in HTML reporter, so `OUTPUT_FORMAT: html` was never a
+  recognized variable and no `.html` file was ever written. Fixed by enabling
+  `MARKDOWN_SUMMARY_REPORTER: true` and wrapping its Markdown output in a
+  minimal static `<pre>`-based HTML shell in the same shell step — still zero
+  new dependencies, still no build step. If `MARKDOWN_SUMMARY_REPORTER`'s
+  output filename ever changes upstream, the step now fails loudly with an
+  `::error::` and a directory listing instead of a silent/cryptic `cp` error.
+
 ## What's NOT covered here
 
 These workflow YAML files cannot be exercised by this repo's vanilla test
