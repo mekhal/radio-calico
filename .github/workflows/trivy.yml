@@ -34,7 +34,7 @@ jobs:
           scan-type: fs
           scan-ref: .
           format: template
-          template: "@/contrib/html.tpl"
+          template: "@contrib/html.tpl"
           output: trivy-report.html
           # Report-only for now, same reasoning as Mega-Linter's DISABLE_ERRORS.
           exit-code: 0
