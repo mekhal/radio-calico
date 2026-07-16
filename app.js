@@ -383,9 +383,9 @@
     });
     testReportButton.addEventListener("click", () => openTestReportModal(testReportButton));
 
-    // Issue #67: static reports published by CI (Mega-Linter, Trivy) — unlike
-    // the Test Report modal above, these can only run in CI, so they're plain
-    // links to pre-generated report pages instead of on-demand buttons.
+    // Issue #67: lint report published by CI (Mega-Linter) — unlike the Test
+    // Report modal above, it can only run in CI, so it's a plain link to a
+    // pre-generated report page instead of an on-demand button.
     const lintReportLink = document.createElement("a");
     lintReportLink.dataset.testid = "footer-lint-report-link";
     lintReportLink.href = "reports/lint/megalinter-report.html";
@@ -397,12 +397,14 @@
       color: "#38A29D",
     });
 
+    // Issue #79: repurposed to link to GitHub's native Code Scanning Alerts
+    // page instead of the static Trivy HTML report (supersedes #67's version).
     const securityReportLink = document.createElement("a");
     securityReportLink.dataset.testid = "footer-security-report-link";
-    securityReportLink.href = "reports/security/trivy-report.html";
+    securityReportLink.href = "https://github.com/mekhal/aidlc-radio-calico/security/code-scanning";
     securityReportLink.target = "_blank";
     securityReportLink.rel = "noopener noreferrer";
-    securityReportLink.textContent = "Security Report";
+    securityReportLink.textContent = "Code Security Audit";
     Object.assign(securityReportLink.style, {
       marginLeft: "1rem",
       color: "#38A29D",
