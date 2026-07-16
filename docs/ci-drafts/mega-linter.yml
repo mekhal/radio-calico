@@ -38,12 +38,27 @@ jobs:
           # first run is expected to surface many findings. Revisit making
           # this blocking as a follow-up issue once findings are triaged.
           DISABLE_ERRORS: true
-          OUTPUT_FORMAT: html
+          # Fix (issue #67 CI failure): Mega-Linter has no built-in HTML
+          # reporter (OUTPUT_FORMAT: html was never a recognized variable, so
+          # megalinter-reports/*.html was never written). Using the Markdown
+          # summary reporter instead and wrapping it in a static HTML shell
+          # below — no new dependency, matches this repo's no-build-step rule.
+          MARKDOWN_SUMMARY_REPORTER: true
 
       - name: Stage report under reports/lint
         run: |
           mkdir -p reports/lint
-          cp megalinter-reports/*.html reports/lint/megalinter-report.html
+          SUMMARY_FILE=$(find megalinter-reports -maxdepth 1 -iname 'megalinter-report.md' -o -iname '*-summary.md' 2>/dev/null | head -n1)
+          if [ -z "$SUMMARY_FILE" ]; then
+            echo "::error::Mega-Linter markdown summary report not found under megalinter-reports/. Check MARKDOWN_SUMMARY_REPORTER's output filename upstream."
+            ls -la megalinter-reports/ || true
+            exit 1
+          fi
+          {
+            echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Mega-Linter Report</title></head><body><pre>'
+            sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' "$SUMMARY_FILE"
+            echo '</pre></body></html>'
+          } > reports/lint/megalinter-report.html
 
       - name: Upload report as CI artifact (develop feedback)
         if: github.ref_name == 'develop' || github.event_name == 'pull_request'

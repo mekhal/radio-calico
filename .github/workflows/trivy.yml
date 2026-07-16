@@ -26,7 +26,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Trivy filesystem scan (HTML report)
-        uses: aquasecurity/trivy-action@0.28.0
+        # Tag fix (issue #67 CI failure): trivy-action's release tags are all
+        # v-prefixed (v0.28.0, v0.36.0, ...) — there is no unprefixed "0.28.0"
+        # tag, so the action couldn't resolve.
+        uses: aquasecurity/trivy-action@v0.28.0
         with:
           scan-type: fs
           scan-ref: .
