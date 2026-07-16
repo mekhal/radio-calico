@@ -27,41 +27,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Trivy filesystem scan (HTML report)
-        # Version fix (issue #67 CI failures, in order):
-        # 1. Tags are v-prefixed (v0.28.0, v0.36.0, ...) — no unprefixed
-        #    "0.28.0" tag exists, so @0.28.0 couldn't resolve.
-        # 2. @v0.28.0 pins a transitive aquasecurity/setup-trivy tag (v0.2.1)
-        #    that was later deleted upstream; @v0.29.0-v0.31.0 have the same
-        #    problem. v0.32.0+ pin setup-trivy by immutable commit SHA
-        #    instead, so bumping all the way to v0.36.0 (current latest) is
-        #    required, not just adding the "v".
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          scan-type: fs
-          scan-ref: .
-          format: template
-          # Relative path fix (issue #67 CI failure): the old container-based
-          # trivy-action baked contrib/html.tpl into the image root, so an
-          # absolute "@/contrib/html.tpl" resolved. v0.36.0 runs as a
-          # binary/composite action with no container filesystem root, and
-          # checks out aquasecurity/trivy's source to resolve the template
-          # shorthand relatively instead.
-          template: "@contrib/html.tpl"
-          output: trivy-report.html
-          # Report-only for now, same reasoning as Mega-Linter's DISABLE_ERRORS.
-          exit-code: 0
-
       - name: Trivy filesystem scan (SARIF)
-        # Issue #79: SARIF is a second, separate scan run (trivy-action only
-        # emits one format per invocation) so the footer's "Code Security
-        # Audit" link has real GitHub Code Scanning Alerts data to show.
+        # Issue #87: dropped the format: template / "@contrib/html.tpl" step
+        # that used to run here. That template path only resolves inside
+        # Trivy's own checked-out source tree, not this runner's working
+        # directory, so it always failed with "open contrib/html.tpl: no
+        # such file or directory" and the whole job exited 1 before any
+        # report could be produced. SARIF is a built-in Trivy format that
+        # needs no external template, and per the human's step-3 decision on
+        # #87 the report is linked to directly rather than rendered through
+        # a custom HTML viewer, so a single scan step is now enough.
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: fs
           scan-ref: .
           format: sarif
           output: trivy-results.sarif
+          # Report-only for now, same reasoning as Mega-Linter's DISABLE_ERRORS.
           exit-code: 0
 
       - name: Upload SARIF to GitHub Code Scanning
@@ -69,30 +51,29 @@ jobs:
         with:
           sarif_file: trivy-results.sarif
 
-      - name: Stage reports under reports/security
+      - name: Stage report under reports/security
         run: |
           mkdir -p reports/security
-          cp trivy-report.html reports/security/trivy-report.html
           cp trivy-results.sarif reports/security/trivy.sarif
 
-      - name: Upload reports as CI artifact (develop feedback)
+      - name: Upload report as CI artifact (develop feedback)
         if: github.ref_name == 'develop' || github.event_name == 'pull_request'
         uses: actions/upload-artifact@v4
         with:
           name: trivy-report
-          path: reports/security/
+          path: reports/security/trivy.sarif
 
-      - name: Publish reports to main
+      - name: Publish report to main
         # Same GITHUB_TOKEN-only rule as mega-linter.yml — see that file's
         # comment for why this doesn't loop.
         if: github.ref_name == 'main' && github.event_name == 'push'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add reports/security/trivy-report.html reports/security/trivy.sarif
+          git add reports/security/trivy.sarif
           if git diff --cached --quiet; then
             echo "No report changes to commit"
           else
-            git commit -m "chore: publish Trivy reports [skip ci]"
+            git commit -m "chore: publish Trivy report [skip ci]"
             git push
           fi
