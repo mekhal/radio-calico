@@ -60,7 +60,7 @@ The gate block to append verbatim (each command is its own code block so GitHub 
 - **Test PR and Code PR are separate PRs** (steps 4 and 6). Never combine them, unless the human explicitly waives the Test PR at step 3 (see step 3 above) — the agent may propose the waiver but never decide it unilaterally.
 - **Split large work into multiple tickets** in steps 4 and 6 so a human can actually review each PR. Reviewability is a requirement, not a nicety.
 - **Reuse-first**, and cover reusable pieces with unit tests.
-- **Missed functionality becomes a NEW issue** — never expand scope inside the current loop. Keep the focus on closing the current issue.
+- **Missed functionality becomes a NEW issue** — never expand scope inside the current loop. Keep the focus on closing the current issue. **Exception:** if the out-of-scope finding belongs to a related ticket that's already sequenced (e.g. Ticket A → B → C under the same parent story), post it as a plain comment on that downstream ticket instead of opening a new issue — **do not tag `@claude`** in that comment; the human tags the agent themselves when they start work on that ticket. See `docs/decisions/2026-07-17-cross-reference-out-of-scope-findings-on-related-tickets.md`.
 - On step-7 rework requests, **loop back to step 6** (fix the code) and open a new Code PR; do not reopen the whole loop.
 - `develop` → `main` is a **prod release and is human-only**. Never open or merge a PR into `main`.
 - **Always explicitly set the PR base branch to `develop`** when opening a Test PR or Code PR (e.g. `gh pr create --base develop`) — never rely on the default base branch, which may be `main`. See `docs/decisions/2026-07-12-pr-base-branch-must-be-develop.md`.
@@ -79,7 +79,7 @@ These are the README's principles restated as directives you must act on. `READM
 - **Review-sized PRs.** Before opening a PR, if the diff is too large to review, split it into multiple tickets first.
 - **Capture the decision.** Every human decision is recorded so the agent improves next round (see "Skills").
 - **Production-grade.** Every Code PR must pass the Definition of Done below before a human merges.
-- **Close the current issue.** Missed functionality becomes a NEW issue — never drag it into the current loop.
+- **Close the current issue.** Missed functionality becomes a NEW issue — never drag it into the current loop, unless a related downstream ticket already exists, in which case comment the finding there instead (untagged — see Hard rules).
 
 ### The 5 questions (step 2 context discovery)
 

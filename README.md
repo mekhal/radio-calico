@@ -166,7 +166,7 @@ The AI then does **step 4** (Test PR) → Human **approves (step 5)** → AI **s
 - **PRs must be reviewable** if too big, split into tickets (applies to both the test step and the code step).
 - **Tests stick to the AC** no tests beyond the agreed AC scope.
 - **Reuse-first** build reusable code and write unit tests covering the reusable pieces.
-- **Missed work → new issue** don't drag newly found work into the current loop; focus on closing the current issue.
+- **Missed work → new issue** don't drag newly found work into the current loop; focus on closing the current issue. **Exception:** if it belongs to a related ticket already sequenced under the same parent story, comment it there instead — untagged (`@claude` not mentioned), so the human tags the AI themselves when that ticket's work starts.
 - **Separate PR types** the Test PR (step 4) and Code PR (step 6) are distinct PRs so review happens in layers — unless the human explicitly waives the Test PR at step 3; the AI may propose the waiver but never decide it unilaterally.
 
 ---
