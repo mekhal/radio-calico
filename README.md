@@ -168,6 +168,7 @@ The AI then does **step 4** (Test PR) → Human **approves (step 5)** → AI **s
 - **Reuse-first** build reusable code and write unit tests covering the reusable pieces.
 - **Missed work → new issue** don't drag newly found work into the current loop; focus on closing the current issue.
 - **Separate PR types** the Test PR (step 4) and Code PR (step 6) are distinct PRs so review happens in layers — unless the human explicitly waives the Test PR at step 3; the AI may propose the waiver but never decide it unilaterally.
+- **Check before committing `CLAUDE.md`** always run `git diff --cached -- CLAUDE.md` before staging/committing a change to it, and confirm the diff is what was intended — its working tree has been observed to silently match `develop`'s version instead of the branch's own `HEAD` (root cause unconfirmed).
 
 ---
 
@@ -238,6 +239,7 @@ Decided under issue #20 (see `docs/decisions/`):
 - **App code:** HTML + vanilla JavaScript + jQuery, CDN `<script>` dependencies only — no build step, no `npm install`. If any React remains, it's limited to bare `ReactDOM`/`React.createElement`, no extra packages.
 - **Data:** `localStorage` acts as the "database"; no backend store.
 - **Tests:** hand-written vanilla JavaScript under `tests/`, run only by opening `tests/test-runner.html` in a browser (never on app load, never via `npm test`); mock `localStorage` where a test needs "the database." `index.html` links to the test report page.
+- **Test PR scope:** a ticket only needs a Test PR if its changes touch `index.html` or a script file it loads — the vanilla runner can't exercise anything else (workflow/process docs, `CLAUDE.md` rules, decision records). Other tickets waive the Test PR at step 3 and go straight to the Code PR.
 
 ---
 

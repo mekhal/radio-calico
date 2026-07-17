@@ -168,6 +168,7 @@ Integration test: HLS player โหลด stream URL สำเร็จ
 - **Reuse-first** สร้างโค้ดที่ใช้ซ้ำได้ และเขียน unit test ครอบตัวที่ reuse
 - **งานตกหล่น → issue ใหม่** ไม่ลากงานที่พบเพิ่มเข้ามาใน loop ปัจจุบัน เน้นปิด issue ปัจจุบันให้จบ
 - **แยกชนิด PR** Test PR (ขั้น 4) และ Code PR (ขั้น 6) เป็นคนละ PR เพื่อ review เป็นชั้น ๆ — เว้นแต่มนุษย์จะสั่ง waive Test PR ไว้ชัดเจนในขั้น 3 โดย AI เสนอ waive ได้แต่ต้องไม่ตัดสินใจเองฝ่ายเดียว
+- **เช็คก่อน commit `CLAUDE.md`** ทุกครั้งที่จะ stage/commit การแก้ไข `CLAUDE.md` ต้องรัน `git diff --cached -- CLAUDE.md` ตรวจก่อนว่าตรงกับที่ตั้งใจจริง เพราะเคยพบว่า working tree ของไฟล์นี้ silently กลับไปตรงกับเวอร์ชันของ `develop` แทนที่จะเป็น `HEAD` ของ branch (ยังไม่ยืนยัน root cause ชัดเจน)
 
 ---
 
@@ -238,6 +239,7 @@ aidlc-radiocalico/
 - **โค้ดแอป:** HTML + vanilla JavaScript + jQuery อ้างอิง dependency ผ่าน CDN `<script>` เท่านั้น ไม่มี build step ไม่มี `npm install` ถ้ายังเหลือ React อยู่บ้าง จะใช้แค่ `ReactDOM`/`React.createElement` เปล่า ๆ ไม่ติดตั้ง package เพิ่ม
 - **ข้อมูล:** ใช้ `localStorage` เป็น "database"; ไม่มี backend store
 - **เทส:** เขียนเทสแบบ vanilla JavaScript เองภายใต้ `tests/` รันเฉพาะเมื่อเปิดหน้า `tests/test-runner.html` ในเบราว์เซอร์เท่านั้น (ไม่รันตอนเปิดแอป ไม่รันผ่าน `npm test`) และ mock `localStorage` เฉพาะเท่าที่ AC ต้องใช้ หน้า `index.html` มีลิงก์ไปหน้ารายงานผลเทสนี้
+- **ขอบเขต Test PR:** ticket จะต้องมี Test PR ก็ต่อเมื่อการเปลี่ยนแปลงแตะ `index.html` หรือไฟล์ script ที่ถูกเรียกใช้ในนั้น — vanilla runner ไม่มีทางเทสอย่างอื่นได้ (เอกสาร/workflow, กฎใน `CLAUDE.md`, บันทึกการตัดสินใจ) ticket นอกเหนือจากนี้ให้ waive Test PR ที่ขั้น 3 แล้วไป Code PR ตรง ๆ
 
 ---
 

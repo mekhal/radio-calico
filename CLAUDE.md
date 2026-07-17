@@ -65,6 +65,7 @@ The gate block to append verbatim (each command is its own code block so GitHub 
 - `develop` → `main` is a **prod release and is human-only**. Never open or merge a PR into `main`.
 - **Always explicitly set the PR base branch to `develop`** when opening a Test PR or Code PR (e.g. `gh pr create --base develop`) — never rely on the default base branch, which may be `main`. See `docs/decisions/2026-07-12-pr-base-branch-must-be-develop.md`.
 - **Follow-up changes to an already-open PR must be commented on that PR itself, not on the parent issue.** The harness always creates a brand-new branch when triggered from an issue comment, but pushes directly onto the existing branch when triggered from an open PR's comment — commenting on the issue instead spawns a stray duplicate branch. Merging or deleting branches is outside the agent's capability; if duplicate branches ever need consolidating, the human does that merge/delete manually. See `docs/decisions/2026-07-16-pr-followups-on-pr-not-issue.md`.
+- **Before staging/committing any change to root `CLAUDE.md`, run `git diff --cached -- CLAUDE.md` and confirm it matches what you intended.** The working tree's `CLAUDE.md` has been observed to silently match `develop`'s version instead of the branch's own `HEAD` in some job runs (root cause unconfirmed, suspected in the workflow's checkout step, which the agent cannot inspect or fix). Committing without this check risks silently reverting already-merged human decisions in `CLAUDE.md`. See `docs/decisions/2026-07-17-claude-md-revert-mitigation-workflow-blocked.md`.
 
 ## Operating rules (imperative)
 
@@ -121,6 +122,7 @@ Decided under issue #20 (see `docs/decisions/2026-07-12-tech-stack-vanilla-js-jq
 - **Dependencies:** CDN `<script>` references only — the app never runs `npm install`.
 - **Data:** `localStorage` is the "database"; there is no backend/server-side store.
 - **Tests:** hand-written vanilla JavaScript (no Jest/npm test framework) under `tests/`. If a test needs "the database," mock `localStorage` — only as far as the AC under test requires. Tests run only when `tests/test-runner.html` is opened directly in a browser (never on app load, never via an `npm test` script); `index.html` links to that report page. See `docs/decisions/2026-07-12-testing-framework-vanilla-runner.md` and `tests/README.md`.
+- **Test PR scope:** a ticket only needs a Test PR (step 4) if its changes touch `index.html` or a script file it loads — the vanilla runner has no way to exercise anything else (workflow/process docs, `CLAUDE.md` rules, decision records). For tickets outside that surface, waive the Test PR at step 3 and go straight to the Code PR. See `docs/decisions/2026-07-17-test-pr-scope-limited-to-index-html-surface.md`.
 
 ## Skills
 
