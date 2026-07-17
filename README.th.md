@@ -213,7 +213,7 @@ aidlc-radiocalico/
 
 | Branch | ความหมาย |
 |---|---|
-| feature branch | ที่ AI เปิด Test PR / Code PR ในแต่ละ loop — ต้องระบุ `--base develop` ชัดเจนเสมอ (ห้ามพึ่ง default base branch ซึ่งอาจเป็น `main`) เมื่อ PR เปิดแล้ว ให้คอมเมนต์ตามงานต่อที่ตัว PR นั้น (ไม่ใช่ที่ issue ต้นทาง) ไม่เช่นนั้น harness จะสร้าง branch ซ้ำซ้อนขึ้นมาใหม่โดยไม่ตั้งใจ |
+| feature branch | ที่ AI เปิด Test PR / Code PR ในแต่ละ loop — ต้องระบุ `--base develop` ชัดเจนเสมอ (ห้ามพึ่ง default base branch ซึ่งอาจเป็น `main`) ก่อนแก้ไฟล์ใด ๆ AI ต้องตรวจก่อนว่า working tree ตรงกับ `origin/develop` จริง แล้ว sync ถ้าไม่ตรง (ดู issue #106 — บาง job checkout ไปที่ `main` แทน `develop`) เมื่อ PR เปิดแล้ว ให้คอมเมนต์ตามงานต่อที่ตัว PR นั้น (ไม่ใช่ที่ issue ต้นทาง) ไม่เช่นนั้น harness จะสร้าง branch ซ้ำซ้อนขึ้นมาใหม่โดยไม่ตั้งใจ |
 | `develop` | ปลายทางของแต่ละ loop ที่สมบูรณ์ (มนุษย์ merge) |
 | `main` | Production การ merge จาก `develop` → `main` คือ **prod release** และต้องทำโดย **มนุษย์เท่านั้น** |
 

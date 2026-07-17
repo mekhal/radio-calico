@@ -65,6 +65,7 @@ The gate block to append verbatim (each command is its own code block so GitHub 
 - `develop` → `main` is a **prod release and is human-only**. Never open or merge a PR into `main`.
 - **Always explicitly set the PR base branch to `develop`** when opening a Test PR or Code PR (e.g. `gh pr create --base develop`) — never rely on the default base branch, which may be `main`. See `docs/decisions/2026-07-12-pr-base-branch-must-be-develop.md`.
 - **Follow-up changes to an already-open PR must be commented on that PR itself, not on the parent issue.** The harness always creates a brand-new branch when triggered from an issue comment, but pushes directly onto the existing branch when triggered from an open PR's comment — commenting on the issue instead spawns a stray duplicate branch. Merging or deleting branches is outside the agent's capability; if duplicate branches ever need consolidating, the human does that merge/delete manually. See `docs/decisions/2026-07-16-pr-followups-on-pr-not-issue.md`.
+- **Before making any edits, verify the job's working tree actually matches `origin/develop`.** A confirmed, root-cause-unresolved bug (issue #106) sometimes checks a job out at the repo's default branch (`main`) instead of `develop`, even though the workflow's first checkout step specifies `ref: develop`. Compare `HEAD` to `origin/develop` (e.g. `git diff HEAD origin/develop --stat`); if they diverge **and** the branch has no existing remote history of its own (`git ls-remote origin <branch>` is empty — nothing to lose), run `git reset --hard origin/develop` before editing anything, then re-verify with `git diff origin/develop --stat` before staging/committing. If the branch already has its own pushed commits (follow-up work on an open PR), do not force-reset — flag the mismatch to the human instead. See `docs/decisions/2026-07-17-sync-to-develop-before-work-mitigation.md`.
 
 ## Operating rules (imperative)
 
@@ -104,7 +105,7 @@ A Code PR is not done until all of these hold:
 
 ### Branching
 
-- **feature branch** — where you open the Test PR / Code PR for each loop. Once its PR is open, comment on that PR (not the parent issue) for any follow-up changes so commits land on the same branch instead of a new one.
+- **feature branch** — where you open the Test PR / Code PR for each loop. Before editing anything, verify the working tree matches `origin/develop` (see Hard rules) and sync it if it doesn't and the branch has no remote history yet. Once its PR is open, comment on that PR (not the parent issue) for any follow-up changes so commits land on the same branch instead of a new one.
 - **`develop`** — the destination of each completed loop; **a human merges into it**, never you.
 - **`main`** — merging `develop` → `main` is a **production release and is human-only**. Never open or merge a PR into `main`.
 - Merging/deleting branches (e.g. consolidating two duplicate branches) is a git operation the agent cannot perform — it is a manual, human-only action.
