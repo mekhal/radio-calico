@@ -38,8 +38,6 @@ jobs:
       actions: read
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: develop 
       - name: Checkout claudeskill
         uses: actions/checkout@v4
         with:
