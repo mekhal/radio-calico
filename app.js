@@ -384,12 +384,12 @@
       display: "flex",
       flexWrap: "wrap",
       alignItems: "center",
-      justifyContent: "space-between",
-      gap: "0.5rem",
+      justifyContent: "flex-start",
+      gap: "1rem",
     });
 
-    // Issue #99, AC3: left-aligned, icon-only (Font Awesome) with a `title`
-    // tooltip carrying the label instead of visible text.
+    // Issue #99: icon-only (Font Awesome) with a `title` tooltip carrying the
+    // label instead of visible text.
     function createIconOnlyLink(testid, href, label, iconClass) {
       const link = document.createElement("a");
       link.dataset.testid = testid;
@@ -405,9 +405,6 @@
       return link;
     }
 
-    const leftGroup = document.createElement("div");
-    Object.assign(leftGroup.style, { display: "flex", alignItems: "center", gap: "0.75rem" });
-
     const githubLink = createIconOnlyLink(
       "footer-github-link",
       "https://github.com/mekhal/aidlc-radio-calico",
@@ -420,11 +417,9 @@
       "LinkedIn",
       "fa-brands fa-linkedin"
     );
-    leftGroup.appendChild(githubLink);
-    leftGroup.appendChild(linkedinLink);
 
-    // Issue #99, AC4: right-aligned, each existing link/button keeps its
-    // visible text label with a Font Awesome icon prefixed.
+    // Issue #99, AC4: each existing link/button keeps its visible text label
+    // with a Font Awesome icon prefixed.
     function prependIcon(el, iconClass) {
       const icon = document.createElement("i");
       icon.className = iconClass;
@@ -432,9 +427,6 @@
       Object.assign(icon.style, { marginRight: "0.375rem" });
       el.insertBefore(icon, el.firstChild);
     }
-
-    const rightGroup = document.createElement("div");
-    Object.assign(rightGroup.style, { display: "flex", flexWrap: "wrap", alignItems: "center", gap: "1rem" });
 
     const siteLink = document.createElement("a");
     siteLink.dataset.testid = "footer-site-link";
@@ -482,13 +474,12 @@
     Object.assign(securityReportLink.style, { color: "#38A29D" });
     prependIcon(securityReportLink, "fa-solid fa-shield-halved");
 
-    rightGroup.appendChild(siteLink);
-    rightGroup.appendChild(testReportButton);
-    rightGroup.appendChild(lintReportLink);
-    rightGroup.appendChild(securityReportLink);
-
-    linksRow.appendChild(leftGroup);
-    linksRow.appendChild(rightGroup);
+    linksRow.appendChild(siteLink);
+    linksRow.appendChild(testReportButton);
+    linksRow.appendChild(lintReportLink);
+    linksRow.appendChild(securityReportLink);
+    linksRow.appendChild(githubLink);
+    linksRow.appendChild(linkedinLink);
 
     footerInner.appendChild(disclaimer);
     footerInner.appendChild(linksRow);

@@ -30,5 +30,6 @@
     "app-mount-scoping.test.js",
     "footer-lint-report-link.test.js",
     "footer-security-report-link.test.js",
+    "footer-github-linkedin-links.test.js",
   ];
 })(window);
