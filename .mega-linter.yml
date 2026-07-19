@@ -1,0 +1,30 @@
+# Mega-Linter config (issue #120).
+#
+# ENABLE is scoped to this repo's *decided* tech stack (see
+# docs/decisions/2026-07-12-tech-stack-vanilla-js-jquery.md and CLAUDE.md's
+# "Tech stack" section), not to which file types happen to exist in the repo
+# right now. Two entries below (CSS, POWERSHELL) have no matching file yet:
+#
+#   - CSS: no .css file exists yet, but the style guide under
+#     RadioCalicoStyle/ is written for future UI work that will need one.
+#   - POWERSHELL: scripts/scaffold.ps1 is documented in CLAUDE.md's Commands
+#     section as the repo's scaffolding script but hasn't been created yet.
+#
+# Keeping them enabled now means the linter is already in place the moment
+# either file shows up, instead of someone having to remember to add it.
+# Revisit this list only if the tech-stack decision itself changes (e.g. a
+# new language/tool is adopted) — not on every individual file add/remove.
+#
+# Everything else Mega-Linter can auto-detect (Python, Go, Docker, Terraform,
+# etc.) is deliberately left disabled: none of it is part of this repo's
+# stack, and running those linters was pure wasted scan time.
+ENABLE:
+  - HTML
+  - CSS
+  - JAVASCRIPT
+  - MARKDOWN
+  - YAML
+  - POWERSHELL
+
+# Generated/binary/report output — never source to lint.
+FILTER_REGEX_EXCLUDE: "(reports/|megalinter-reports/|RadioCalicoStyle/.*\\.png$)"
