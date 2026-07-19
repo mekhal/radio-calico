@@ -384,12 +384,10 @@
       display: "flex",
       flexWrap: "wrap",
       alignItems: "center",
-      justifyContent: "space-between",
-      gap: "0.5rem",
+      justifyContent: "flex-start",
+      gap: "1rem",
     });
 
-    // Issue #99, AC3: left-aligned, icon-only (Font Awesome) with a `title`
-    // tooltip carrying the label instead of visible text.
     function createIconOnlyLink(testid, href, label, iconClass) {
       const link = document.createElement("a");
       link.dataset.testid = testid;
@@ -405,26 +403,6 @@
       return link;
     }
 
-    const leftGroup = document.createElement("div");
-    Object.assign(leftGroup.style, { display: "flex", alignItems: "center", gap: "0.75rem" });
-
-    const githubLink = createIconOnlyLink(
-      "footer-github-link",
-      "https://github.com/mekhal/aidlc-radio-calico",
-      "GitHub",
-      "fa-brands fa-github"
-    );
-    const linkedinLink = createIconOnlyLink(
-      "footer-linkedin-link",
-      "https://www.linkedin.com/in/mekhalomlao/",
-      "LinkedIn",
-      "fa-brands fa-linkedin"
-    );
-    leftGroup.appendChild(githubLink);
-    leftGroup.appendChild(linkedinLink);
-
-    // Issue #99, AC4: right-aligned, each existing link/button keeps its
-    // visible text label with a Font Awesome icon prefixed.
     function prependIcon(el, iconClass) {
       const icon = document.createElement("i");
       icon.className = iconClass;
@@ -432,9 +410,6 @@
       Object.assign(icon.style, { marginRight: "0.375rem" });
       el.insertBefore(icon, el.firstChild);
     }
-
-    const rightGroup = document.createElement("div");
-    Object.assign(rightGroup.style, { display: "flex", flexWrap: "wrap", alignItems: "center", gap: "1rem" });
 
     const siteLink = document.createElement("a");
     siteLink.dataset.testid = "footer-site-link";
@@ -458,9 +433,6 @@
     testReportButton.addEventListener("click", () => openTestReportModal(testReportButton));
     prependIcon(testReportButton, "fa-solid fa-clipboard-check");
 
-    // Issue #67: lint report published by CI (Mega-Linter) — unlike the Test
-    // Report modal above, it can only run in CI, so it's a plain link to a
-    // pre-generated report page instead of an on-demand button.
     const lintReportLink = document.createElement("a");
     lintReportLink.dataset.testid = "footer-lint-report-link";
     lintReportLink.href = "reports/lint/megalinter-report.html";
@@ -470,9 +442,6 @@
     Object.assign(lintReportLink.style, { color: "#38A29D" });
     prependIcon(lintReportLink, "fa-solid fa-broom");
 
-    // Issue #87 (supersedes #79's version): repointed to the raw Trivy SARIF
-    // report published by CI, per the human's step-3 decision to keep this
-    // simple for the demo rather than build a custom grouped HTML viewer.
     const securityReportLink = document.createElement("a");
     securityReportLink.dataset.testid = "footer-security-report-link";
     securityReportLink.href = "reports/security/trivy.sarif";
@@ -482,13 +451,25 @@
     Object.assign(securityReportLink.style, { color: "#38A29D" });
     prependIcon(securityReportLink, "fa-solid fa-shield-halved");
 
-    rightGroup.appendChild(siteLink);
-    rightGroup.appendChild(testReportButton);
-    rightGroup.appendChild(lintReportLink);
-    rightGroup.appendChild(securityReportLink);
+    const githubLink = createIconOnlyLink(
+      "footer-github-link",
+      "https://github.com/mekhal/aidlc-radio-calico",
+      "GitHub",
+      "fa-brands fa-github"
+    );
+    const linkedinLink = createIconOnlyLink(
+      "footer-linkedin-link",
+      "https://www.linkedin.com/in/mekhalomlao/",
+      "LinkedIn",
+      "fa-brands fa-linkedin"
+    );
 
-    linksRow.appendChild(leftGroup);
-    linksRow.appendChild(rightGroup);
+    linksRow.appendChild(siteLink);
+    linksRow.appendChild(testReportButton);
+    linksRow.appendChild(lintReportLink);
+    linksRow.appendChild(securityReportLink);
+    linksRow.appendChild(githubLink);
+    linksRow.appendChild(linkedinLink);
 
     footerInner.appendChild(disclaimer);
     footerInner.appendChild(linksRow);
