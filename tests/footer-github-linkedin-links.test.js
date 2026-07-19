@@ -12,6 +12,7 @@
 
   describe("Footer GitHub/LinkedIn links", () => {
     it("GitHub link opens the repo in a new tab, with visible label", async () => {
+    it("GitHub link opens the repo in a new tab, icon-only", async () => {
       window.installMockHls();
       const root = await loadApp();
       await nextTick();
@@ -25,6 +26,7 @@
       expect(link.getAttribute("rel")).toContain("noopener");
       expect(link.getAttribute("rel")).toContain("noreferrer");
       expect(link.textContent.trim()).toBe("GitHub");
+      expect(link.textContent.trim()).toBe("");
 
       unloadApp(root);
     });
