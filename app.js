@@ -388,18 +388,16 @@
       gap: "1rem",
     });
 
-    function createIconOnlyLink(testid, href, label, iconClass) {
+    function createIconLink(testid, href, label, iconClass) {
       const link = document.createElement("a");
       link.dataset.testid = testid;
       link.href = href;
       link.title = label;
       link.target = "_blank";
       link.rel = "noopener noreferrer";
-      Object.assign(link.style, { color: "inherit", fontSize: "1.125rem" });
-      const icon = document.createElement("i");
-      icon.className = iconClass;
-      icon.setAttribute("aria-hidden", "true");
-      link.appendChild(icon);
+      link.textContent = label;
+      Object.assign(link.style, { color: "#38A29D" });
+      prependIcon(link, iconClass);
       return link;
     }
 
@@ -414,6 +412,8 @@
     const siteLink = document.createElement("a");
     siteLink.dataset.testid = "footer-site-link";
     siteLink.href = "https://www.radio-calico.com/";
+    siteLink.target = "_blank";
+    siteLink.rel = "noopener noreferrer";
     siteLink.textContent = "radio-calico.com";
     prependIcon(siteLink, "fa-solid fa-radio");
 
@@ -451,13 +451,13 @@
     Object.assign(securityReportLink.style, { color: "#38A29D" });
     prependIcon(securityReportLink, "fa-solid fa-shield-halved");
 
-    const githubLink = createIconOnlyLink(
+    const githubLink = createIconLink(
       "footer-github-link",
       "https://github.com/mekhal/aidlc-radio-calico",
       "GitHub",
       "fa-brands fa-github"
     );
-    const linkedinLink = createIconOnlyLink(
+    const linkedinLink = createIconLink(
       "footer-linkedin-link",
       "https://www.linkedin.com/in/mekhalomlao/",
       "LinkedIn",

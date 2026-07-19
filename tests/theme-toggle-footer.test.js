@@ -95,6 +95,8 @@
       const siteLink = findFooterSiteLink(root);
       expect(siteLink).toBeTruthy();
       expect(siteLink.getAttribute("href")).toBe("https://www.radio-calico.com/");
+      expect(siteLink.getAttribute("target")).toBe("_blank");
+      expect(siteLink.getAttribute("rel")).toContain("noopener");
 
       unloadApp(root);
     });

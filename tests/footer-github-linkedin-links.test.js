@@ -11,7 +11,7 @@
   }
 
   describe("Footer GitHub/LinkedIn links", () => {
-    it("GitHub link opens the repo in a new tab, icon-only", async () => {
+    it("GitHub link opens the repo in a new tab, with visible label", async () => {
       window.installMockHls();
       const root = await loadApp();
       await nextTick();
@@ -24,12 +24,12 @@
       expect(link.getAttribute("target")).toBe("_blank");
       expect(link.getAttribute("rel")).toContain("noopener");
       expect(link.getAttribute("rel")).toContain("noreferrer");
-      expect(link.textContent.trim()).toBe("");
+      expect(link.textContent.trim()).toBe("GitHub");
 
       unloadApp(root);
     });
 
-    it("LinkedIn link opens the profile in a new tab, icon-only", async () => {
+    it("LinkedIn link opens the profile in a new tab, with visible label", async () => {
       window.installMockHls();
       const root = await loadApp();
       await nextTick();
@@ -42,7 +42,7 @@
       expect(link.getAttribute("target")).toBe("_blank");
       expect(link.getAttribute("rel")).toContain("noopener");
       expect(link.getAttribute("rel")).toContain("noreferrer");
-      expect(link.textContent.trim()).toBe("");
+      expect(link.textContent.trim()).toBe("LinkedIn");
 
       unloadApp(root);
     });
