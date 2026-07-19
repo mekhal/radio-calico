@@ -86,3 +86,9 @@ jobs:
             git commit -m "chore: publish Mega-Linter report [skip ci]"
             git push
           fi
+
+      - name: Sync report commit back into develop
+        if: github.ref_name == 'main' && github.event_name == 'push'
+        run: |
+          git fetch origin develop
+          git push origin HEAD:develop
