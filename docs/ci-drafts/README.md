@@ -20,14 +20,26 @@ Per `CLAUDE.md`'s write-guard note, the Claude agent cannot write under
 
 ## Design notes (why they're shaped this way)
 
-- **Two triggers, two purposes.** Push/PR into `develop` gives fast lint/scan
-  feedback while developing. Push into `main` (which only happens after a
-  human's `develop` → `main` merge — merging into `main` stays human-only per
-  `CLAUDE.md`) re-runs the scan and publishes the report by committing it into
-  `main`, because this repo's GitHub Pages is legacy branch-based (`main`,
-  path `/`) with no Actions-based deploy — confirmed by reading the repo's
-  actual Pages settings (`build_type: legacy`, `source.branch: main`,
+- **Trivy: two triggers, two purposes.** Push/PR into `develop` gives fast
+  scan feedback while developing. Push into `main` (which only happens after
+  a human's `develop` → `main` merge — merging into `main` stays human-only
+  per `CLAUDE.md`) re-runs the scan and publishes the report by committing it
+  into `main`, because this repo's GitHub Pages is legacy branch-based
+  (`main`, path `/`) with no Actions-based deploy — confirmed by reading the
+  repo's actual Pages settings (`build_type: legacy`, `source.branch: main`,
   `source.path: /`).
+- **Mega-Linter: rescoped to three triggers under issue #120** (see
+  `docs/decisions/2026-07-19-mega-linter-scan-scope.md`) after the scan was
+  found to be slower than needed. `pull_request → develop` now validates
+  changed files only (`VALIDATE_ALL_CODEBASE: false`); `push → develop`
+  keeps a full scan. Mega-Linter no longer runs on `push → main` at all —
+  instead a weekly `schedule` trigger runs the full scan and is now the sole
+  publisher of the report into `main` (synced back into `develop`
+  afterwards, same as before). The GitHub Pages Mega-Linter report is
+  therefore a periodic repository health snapshot, not a per-merge artifact
+  — Trivy's report is unaffected and still publishes on every `main` push.
+  `.mega-linter.yml` at the repo root further scopes which linters run at
+  all, to this repo's decided tech stack.
 - **Report paths match the footer links already in `app.js`:**
   `reports/lint/megalinter-report.html` and `reports/security/trivy.sarif`,
   both at the site root so they resolve once published to `main`.
@@ -102,3 +114,8 @@ separate Test PR for this ticket. Verify by: copying the files in, pushing to
 then, after a `develop` → `main` merge, confirming the report lands at
 `reports/lint/megalinter-report.html` / `reports/security/trivy.sarif` on
 `main` and the footer links on the live site resolve.
+
+Issue #120's Mega-Linter rescoping (diff-only PRs, weekly full scan/publish)
+follows the same precedent — no separate Test PR, verified post-merge
+instead. See `docs/decisions/2026-07-19-mega-linter-scan-scope.md` for what
+to check once the updated draft is copied in.
