@@ -162,7 +162,7 @@ The AI then does **step 4** (Test PR) → Human **approves (step 5)** → AI **s
 ## 6. Rules of Engagement
 
 - **A human decides every time** no step lets the AI merge or approve on its own.
-- **AI asks when in doubt** before a human approves at any gate, if the AI has doubts it must ask the human to clarify first.
+- **AI asks when in doubt** before a human approves at any gate, if the AI has doubts it must ask the human to clarify first. This also covers over-implementing: if tempted to add something beyond what was literally asked, stop and review it with the human first instead of implementing it and finding out afterward whether it was wanted.
 - **PRs must be reviewable** if too big, split into tickets (applies to both the test step and the code step).
 - **Tests stick to the AC** no tests beyond the agreed AC scope.
 - **Reuse-first** build reusable code and write unit tests covering the reusable pieces.
@@ -185,6 +185,8 @@ The heart of making the agent "keep getting better" is turning **human decisions
 - **Reuse:** The agent invokes these skills in later loops, working better and staying consistent with the human's prior decisions. It also checks `docs/knowledge-asset/published/` for candidates awaiting a human's promotion into `.claude/skills/`, and applies their guidance in the meantime. Candidates that go stale move to `docs/knowledge-asset/deprecated/` and are no longer applied.
 
 > **Why in-repo?** This repo exists to demonstrate the AI-DLC loop end to end, so skills accumulate alongside the process that produced them instead of in a separate checkout.
+
+**AI review evaluations:** promoted from an experimental trial to standard practice at issue #99's close. Every `@claude close` also logs one new entry in [`ai-review-evals/`](ai-review-evals/README.md) — a record of the AI's judgment calls on that issue, which a human scores afterward (`Instruction Fidelity`, `Result Satisfaction`). This is the evidence trail for deciding whether a class of AI decision can move from Human Review Everything to Human Review Risk.
 
 ---
 

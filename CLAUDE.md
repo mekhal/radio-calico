@@ -51,7 +51,7 @@ The gate block to append verbatim (each command is its own code block so GitHub 
 |---|---|---|
 | `@claude approved` | Advance to the next step of the AI-DLC loop (plan → Test PR at step 4, or Test PR → Code PR at step 6). **Never merge or approve on your own.** | Yes |
 | `@claude review` | Answer the human's questions / adjust the plan. **Discuss only — do not write code and do not open a PR.** Then append the gate block again. | Yes |
-| `@claude close` | Used **only to summarize the issue for skill creation**: record the decisions made in this work under `docs/decisions/`, then list any new-skill candidates surfaced by this issue's own work and ask the human whether to add/update/skip (see "Adding a skill"). **Do NOT close the issue yourself — the human closes the issue manually.** | No |
+| `@claude close` | Used **only to summarize the issue for skill creation**: record the decisions made in this work under `docs/decisions/`, log one new entry in `ai-review-evals/` for this close event (see "AI review evaluations"), then list any new-skill candidates surfaced by this issue's own work and ask the human whether to add/update/skip (see "Adding a skill"). **Do NOT close the issue yourself — the human closes the issue manually.** | No |
 | Any other trigger (opening a task / first question) | Follow the AI-DLC loop: at step 2, spawn a sub-agent to ask the 5 questions, then post **plan + Acceptance Criteria only** — do not write code or tests. | Yes |
 
 ## Hard rules (do not violate)
@@ -115,6 +115,8 @@ A Code PR is not done until all of these hold:
 
 Before a human approves at any gate, if you have any doubt, **ask the human to clarify first** — do not assume.
 
+This is not limited to gate approvals. If you are not fully sure what an instruction means, or you are tempted to add something beyond what was literally asked (an unrequested accessibility fallback, a defensive edge case, a "nice to have" convention change), **stop and review it with the human before implementing it** — do not implement it first and find out afterward whether it was wanted. Over-implementing ("over requirement") reads as not following instructions even when well-intentioned, and it slows delivery down rather than speeding it up. See `docs/decisions/2026-07-20-review-before-over-implementing.md`.
+
 ## Tech stack
 
 Decided under issue #20 (see `docs/decisions/2026-07-12-tech-stack-vanilla-js-jquery.md`):
@@ -164,6 +166,14 @@ When you handle `@claude close`:
 ### Using a skill
 
 Skills are stored in this repo's own `.claude/skills/` (source of truth). Before starting any piece of work, check the skills available on the runner and invoke the relevant skill first. Also check `docs/knowledge-asset/published/` for skill candidates awaiting a human's promotion to `.claude/skills/` (see the write-guard workaround above) — read and apply their guidance too, since a draft not yet promoted is still a captured human decision. Drafts in `docs/knowledge-asset/deprecated/` are old/superseded — kept for history, not applied. When a draft becomes outdated, move it from `published/` to `deprecated/`; this folder is outside `.claude/`, so the agent can do that move directly.
+
+## AI review evaluations
+
+Introduced as an experimental trial under issue #119, **promoted to standard practice at issue #99's close** (2026-07-20, see `docs/decisions/2026-07-20-ai-review-evaluation-framework-promoted-to-mandatory.md`): every `@claude close` records one new file in `ai-review-evals/` (see `ai-review-evals/README.md` for the full convention — filename pattern, what counts as a "meaningful decision," the taxonomy) using `ai-review-evals/TEMPLATE.md`.
+
+- The agent fills in `Metadata`, `Task`, `Original User Request`, `AI Decision`, and `Decision Type` at close time; `Risk Level` defaults to `Medium`.
+- `Instruction Fidelity` and `Result Satisfaction` are always left blank for the human to score afterward — the agent never self-scores, so the framework doesn't grade its own homework. If the human provides these scores directly in the `@claude close` comment, the agent fills them in as given.
+- This is the evidence trail behind the "Ask when in doubt" rule above: low scores or review notes recorded here are what justify (or don't yet justify) moving a class of AI decision from Human Review Everything to Human Review Risk.
 
 ## Source of truth & keeping docs in sync
 

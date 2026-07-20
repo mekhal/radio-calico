@@ -11,12 +11,12 @@ It exists to support an evidence-based move from **Human Review Everything** to
 Instruction Fidelity scores can show which kinds of AI decisions are safe to trust with lighter
 review, and which still need a human to look at every time.
 
-## Status: experimental trial
+## Status: standard practice
 
-This is a trial practice, not yet a mandatory step in `CLAUDE.md`'s `@claude close` flow. Once
-this feature is merged, the agent follows it manually for issues in the trial. If it proves
-valuable after enough evaluation data accumulates, a follow-up issue can promote it to a hard
-`CLAUDE.md` rule and/or a `.claude/skills/` skill.
+Introduced as an experimental trial under issue #119. Promoted to a mandatory step in
+`CLAUDE.md`'s `@claude close` flow at issue #99's close (2026-07-20) — see
+`docs/decisions/2026-07-20-ai-review-evaluation-framework-promoted-to-mandatory.md`. Every
+`@claude close` now produces one new file here, per the convention below.
 
 ## What gets recorded
 
