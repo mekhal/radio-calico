@@ -418,33 +418,8 @@
 
     bindSwitchActivation(themeToggle, toggleTheme);
 
-    // Ticket C (issue #101), AC2/AC5: a two-state EN/TH switch (not a
-    // dropdown), defaulting to English. The thumb shows the active
-    // language's flag; the side labels stay the literal codes "EN"/"TH" in
-    // both languages (a code isn't translated), so only the active side and
-    // the aria-label change with the current app language.
-    const langSwitch = createSwitch("language-toggle", "Switch language", "rc-switch--lang");
-    const langToggle = langSwitch.wrapper;
-    langSwitch.offLabel.textContent = "EN";
-    langSwitch.onLabel.textContent = "TH";
-    langToggle.setAttribute("aria-checked", String(currentLanguage === "th"));
-    setSwitchActiveSide(langSwitch, currentLanguage === "th");
-    langSwitch.thumb.textContent = currentLanguage === "th" ? "🇹🇭" : "🇬🇧";
-
-    function toggleLanguage() {
-      if (!TRANSLATIONS) return;
-      const nextLanguage = currentLanguage === "en" ? "th" : "en";
-      setStoredLanguage(nextLanguage);
-      langToggle.setAttribute("aria-checked", String(nextLanguage === "th"));
-      setSwitchActiveSide(langSwitch, nextLanguage === "th");
-      langSwitch.thumb.textContent = nextLanguage === "th" ? "🇹🇭" : "🇬🇧";
-      applyLanguage(nextLanguage);
-    }
-
-    bindSwitchActivation(langToggle, toggleLanguage);
-
     // Ticket B (issue #100), AC7: nav bar landmark Ticket C's toggles (#101)
-    // are added to, right-aligned as a group alongside the brand.
+    // will be added to, alongside the theme toggle already living here.
     const navBar = document.createElement("header");
     navBar.dataset.testid = "nav-bar";
     navBar.className = "masthead mb-auto";
@@ -464,17 +439,8 @@
 
     brand.appendChild(brandLogo);
     brand.appendChild(brandText);
-
-    // Groups the two switches so they sit together, right-aligned against
-    // the brand (`.masthead .inner`'s justify-content: space-between), per
-    // Ticket C AC1 — rather than each control individually claiming a slot.
-    const navToggles = document.createElement("div");
-    navToggles.className = "masthead-toggles";
-    navToggles.appendChild(langToggle);
-    navToggles.appendChild(themeToggle);
-
     navBarInner.appendChild(brand);
-    navBarInner.appendChild(navToggles);
+    navBarInner.appendChild(themeToggle);
     navBar.appendChild(navBarInner);
 
     // Ticket B (issue #100): footer sits in normal document flow at the
@@ -718,66 +684,6 @@
       button.style.background = REST_BACKGROUND;
     });
 
-    // Mirrors the English default text hardcoded into `status` above, so
-    // status updates that land before the i18n fetch resolves (a real race,
-    // not just a theoretical one — HLS/audio events can fire before two
-    // same-origin JSON fetches complete) still show the right English word
-    // instead of leaving stale "loading" text on screen.
-    const STATUS_FALLBACK_EN = {
-      statusLoading: "Status: loading",
-      statusReady: "Status: ready",
-      statusError: "Status: error",
-      statusUnsupported: "Status: unsupported",
-    };
-
-    function setStatus(key) {
-      currentStatusKey = key;
-      const t = TRANSLATIONS && TRANSLATIONS[currentLanguage];
-      status.textContent = t ? t[key] : STATUS_FALLBACK_EN[key];
-    }
-
-    // Ticket C (issue #101), AC3: re-renders every user-facing string from
-    // TRANSLATIONS[lang] once the i18n fetch has resolved (a no-op before
-    // that, guarded above in toggleLanguage()/setStatus()/togglePlayback()),
-    // looking up state-dependent text (play/pause, current status) by
-    // current app state rather than hardcoding it, so a language switch
-    // mid-playback still shows the right word. Called once translations
-    // finish loading below to apply the language restored from localStorage
-    // (or the "en" default) to the already-built DOM, and again on every
-    // language-toggle click.
-    function applyLanguage(lang) {
-      if (!TRANSLATIONS) return;
-      currentLanguage = lang;
-      const t = TRANSLATIONS[lang];
-      document.documentElement.lang = lang;
-
-      heading.textContent = t.heading;
-      brandText.textContent = t.heading;
-
-      button.textContent = isPlaying ? t.pause : t.listenNow;
-      status.textContent = t[currentStatusKey];
-      liveIndicator.textContent = t.live;
-      bufferingIndicator.textContent = t.buffering;
-      errorMessage.textContent = t.errorMessage;
-      refreshButton.textContent = t.refresh;
-
-      themeToggle.setAttribute("aria-label", t.themeToggleAriaLabel);
-      themeSwitch.offLabel.textContent = t.themeLabelLight;
-      themeSwitch.onLabel.textContent = t.themeLabelDark;
-
-      langToggle.setAttribute("aria-label", t.languageToggleAriaLabel);
-
-      disclaimer.textContent = t.footerDisclaimer;
-      siteLinkTextNode.data = t.footerSiteLink;
-      testReportButtonTextNode.data = t.footerTestReport;
-      lintReportLinkTextNode.data = t.footerLintReport;
-      securityReportLinkTextNode.data = t.footerSecurityReport;
-      githubLinkTextNode.data = t.footerGithub;
-      githubLink.title = t.footerGithub;
-      linkedinLinkTextNode.data = t.footerLinkedin;
-      linkedinLink.title = t.footerLinkedin;
-    }
-
     // Ticket B (issue #100), AC2: Bootstrap 4 Cover structure — nav bar,
     // then a centered hero that grows to fill remaining height, then the
     // footer, all inside a max-width/flex-column wrapper (`.site-wrapper` /
@@ -799,16 +705,6 @@
     siteWrapper.appendChild(footer);
 
     root.appendChild(siteWrapper);
-
-    // Ticket C (issue #101), AC6: fetches i18n/en.json + i18n/th.json, then
-    // re-renders the language restored from localStorage (or the "en"
-    // default, a no-op) across the DOM just built above (AC3). Exposed as a
-    // named promise so tests can deterministically await it instead of
-    // racing an arbitrary number of ticks against the fetch.
-    window.__i18nReady = loadTranslations().then((data) => {
-      TRANSLATIONS = data;
-      applyLanguage(currentLanguage);
-    });
 
     let hls;
 
