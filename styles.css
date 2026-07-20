@@ -1,0 +1,94 @@
+/* Ticket B (issue #100): global layout on Bootstrap 4's Cover example,
+   styled per RadioCalicoStyle/RadioCalico_Style_Guide.txt. Theme-dependent
+   colors (dark/light) stay in app.js's injected <style>, since they key off
+   the [data-theme] attribute the app toggles at runtime. */
+
+:root {
+  --rc-mint: #d8f2d5;
+  --rc-forest-green: #1f4e23;
+  --rc-teal: #38a29d;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+h1,
+h2,
+h3,
+.masthead-brand {
+  font-family: "Montserrat", sans-serif;
+}
+
+.site-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.masthead {
+  background: var(--rc-teal);
+  border-radius: 4px;
+  padding: 1rem;
+}
+
+.masthead .inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.masthead-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  color: #ffffff;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.masthead-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--rc-mint);
+  border: 2px solid var(--rc-forest-green);
+}
+
+.hero {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 2rem 1rem;
+  text-align: center;
+}
+
+.hero h1 {
+  font-size: 3rem;
+  font-weight: 700;
+}
+
+.listen-now-btn {
+  box-shadow: 0 0 0 4px rgba(216, 242, 213, 0.6);
+}
+
+.mastfoot {
+  margin-top: auto;
+  padding: 1rem;
+  font-size: 0.8125rem;
+}

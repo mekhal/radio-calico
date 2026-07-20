@@ -5,15 +5,11 @@
   const HOVER_BACKGROUND = "#38A29D";
 
   const THEME_STYLE_ID = "radio-calico-theme-styles";
-  // Issue #99 (Ticket A): footer is `position: fixed`, so body needs bottom
-  // padding sized for the footer's (rough, pre-Ticket-B) two-row layout —
-  // otherwise page content renders underneath it.
   const THEME_CSS = `
     [data-theme="dark"] body { background: #231F20; color: #FFFFFF; }
     [data-theme="light"] body { background: #F5EADA; color: #231F20; }
-    body { padding-bottom: 5.5rem; }
     [data-theme="dark"] footer[data-testid="footer"] { background: transparent; color: #FFFFFF; }
-    [data-theme="light"] footer[data-testid="footer"] { background: transparent; color: #1F4E23; }
+    [data-theme="light"] footer[data-testid="footer"] { background: #F5EADA; color: #1F4E23; }
     footer[data-testid="footer"] a { color: #38A29D; }
   `;
 
@@ -354,25 +350,40 @@
       }
     });
 
-    // Issue #99 (Ticket A): footer is fixed to the viewport bottom, sized
-    // down with a transparent background, and its content wrapped in a
-    // centered container — a rough pass ahead of Ticket B's full layout.
+    // Ticket B (issue #100), AC7: nav bar landmark Ticket C's toggles (#101)
+    // will be added to, alongside the theme toggle already living here.
+    const navBar = document.createElement("header");
+    navBar.dataset.testid = "nav-bar";
+    navBar.className = "masthead mb-auto";
+
+    const navBarInner = document.createElement("div");
+    navBarInner.className = "inner";
+
+    const brand = document.createElement("div");
+    brand.className = "masthead-brand";
+
+    const brandLogo = document.createElement("span");
+    brandLogo.className = "masthead-logo";
+    brandLogo.setAttribute("aria-hidden", "true");
+
+    const brandText = document.createElement("span");
+    brandText.textContent = "Radio Calico";
+
+    brand.appendChild(brandLogo);
+    brand.appendChild(brandText);
+    navBarInner.appendChild(brand);
+    navBarInner.appendChild(themeToggle);
+    navBar.appendChild(navBarInner);
+
+    // Ticket B (issue #100): footer sits in normal document flow at the
+    // bottom of the Bootstrap Cover layout's flex column (`.mastfoot`, see
+    // styles.css), rather than `position: fixed` — no body padding-bottom
+    // workaround needed since it can no longer overlap page content.
     const footer = document.createElement("footer");
     footer.dataset.testid = "footer";
-    Object.assign(footer.style, {
-      position: "fixed",
-      left: "0",
-      right: "0",
-      bottom: "0",
-      padding: "0.5rem 1rem",
-      fontSize: "0.8125rem",
-    });
+    footer.className = "mastfoot";
 
     const footerInner = document.createElement("div");
-    Object.assign(footerInner.style, {
-      maxWidth: "1200px",
-      margin: "0 auto",
-    });
 
     const disclaimer = document.createElement("p");
     disclaimer.textContent =
@@ -484,6 +495,12 @@
     button.type = "button";
     button.dataset.testid = "listen-button";
     button.textContent = "Listen Now";
+    // AC2's "mint accent" is a ring around the button (`.listen-now-btn` in
+    // styles.css) rather than a background recolor — background/hover here
+    // stay Forest Green/Teal per the style guide's Buttons section, which
+    // tests/hero-listen-now-control.test.js already asserts via
+    // getComputedStyle.
+    button.className = "listen-now-btn";
     Object.assign(button.style, {
       background: REST_BACKGROUND,
       color: "#FFFFFF",
@@ -546,7 +563,7 @@
       liveIndicator.hidden = true;
       bufferingIndicator.hidden = true;
       errorMessage.hidden = false;
-      if (!refreshButton.isConnected) root.appendChild(refreshButton);
+      if (!refreshButton.isConnected) heroSection.appendChild(refreshButton);
       refreshButton.hidden = false;
     }
 
@@ -589,24 +606,27 @@
       button.style.background = REST_BACKGROUND;
     });
 
-    root.appendChild(heading);
-    root.appendChild(themeToggle);
-    root.appendChild(status);
-    root.appendChild(button);
-    root.appendChild(liveIndicator);
-    root.appendChild(bufferingIndicator);
-    root.appendChild(errorMessage);
-    root.appendChild(audio);
-    root.appendChild(footer);
+    // Ticket B (issue #100), AC2: Bootstrap 4 Cover structure — nav bar,
+    // then a centered hero that grows to fill remaining height, then the
+    // footer, all inside a max-width/flex-column wrapper (`.site-wrapper` /
+    // `.hero`, see styles.css).
+    const heroSection = document.createElement("main");
+    heroSection.className = "hero";
+    heroSection.appendChild(heading);
+    heroSection.appendChild(status);
+    heroSection.appendChild(button);
+    heroSection.appendChild(liveIndicator);
+    heroSection.appendChild(bufferingIndicator);
+    heroSection.appendChild(errorMessage);
+    heroSection.appendChild(audio);
 
-    // AC2: the footer is `position: fixed`, so it's taken out of document
-    // flow — body needs matching bottom padding or the fixed footer covers
-    // page content (Listen Now button, theme toggle, live indicator).
-    // Not wired to a `resize` listener: initApp() re-runs in the same live
-    // document every time the footer's own Test Report button is clicked
-    // (issue #41's in-DOM modal), and a `window`-level listener would leak
-    // and keep referencing that earlier, by-then-detached footer.
-    document.body.style.paddingBottom = `${footer.offsetHeight}px`;
+    const siteWrapper = document.createElement("div");
+    siteWrapper.className = "site-wrapper";
+    siteWrapper.appendChild(navBar);
+    siteWrapper.appendChild(heroSection);
+    siteWrapper.appendChild(footer);
+
+    root.appendChild(siteWrapper);
 
     let hls;
 
