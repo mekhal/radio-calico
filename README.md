@@ -213,7 +213,7 @@ aidlc-radiocalico/
 
 | Branch | Meaning |
 |---|---|
-| feature branch | Where the AI opens the Test PR / Code PR for each loop — always with an explicit `--base develop` (never rely on the default base branch, which may be `main`). Before editing anything, the AI verifies its working tree actually matches `origin/develop` and syncs it if it doesn't (see issue #106 — jobs sometimes check out `main` instead of `develop`). Once its PR is open, post follow-ups on that PR (not the parent issue), otherwise the harness spins up a stray duplicate branch |
+| feature branch | Where the AI opens the Test PR / Code PR for each loop — always with an explicit `--base develop` (never rely on the default base branch, which may be `main`), including any manually-posted "Create PR" compare link before a PR exists (`compare/develop...branch`, never `compare/main...branch`). Before editing anything, the AI verifies its working tree actually matches `origin/develop` and syncs it if it doesn't (see issue #106 — jobs sometimes check out `main` instead of `develop`). Once its PR is open, post follow-ups on that PR (not the parent issue), otherwise the harness spins up a stray duplicate branch. Before re-implementing an already-approved change, check for an existing branch/PR with the same diff and reuse it instead of starting over |
 | `develop` | The destination of each completed loop (merged by a human) |
 | `main` | Production merging `develop` → `main` is a **prod release** and must be done by a **human only** |
 
