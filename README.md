@@ -168,6 +168,7 @@ The AI then does **step 4** (Test PR) → Human **approves (step 5)** → AI **s
 - **Reuse-first** build reusable code and write unit tests covering the reusable pieces.
 - **Missed work → new issue** don't drag newly found work into the current loop; focus on closing the current issue. **Exception:** if it belongs to a related ticket already sequenced under the same parent story, comment it there instead — untagged (`@claude` not mentioned), so the human tags the AI themselves when that ticket's work starts.
 - **Separate PR types** the Test PR (step 4) and Code PR (step 6) are distinct PRs so review happens in layers — unless the human explicitly waives the Test PR at step 3; the AI may propose the waiver but never decide it unilaterally.
+- **Verify prior branches got a PR** on any new `@claude` trigger for a thread, the AI checks whether branches referenced in that thread's earlier turns actually got an opened PR, and flags any that didn't instead of silently moving on.
 
 ---
 
@@ -186,7 +187,7 @@ The heart of making the agent "keep getting better" is turning **human decisions
 
 > **Why in-repo?** This repo exists to demonstrate the AI-DLC loop end to end, so skills accumulate alongside the process that produced them instead of in a separate checkout.
 
-**AI review evaluations:** promoted from an experimental trial to standard practice at issue #99's close. Every `@claude close` also logs one new entry in [`ai-review-evals/`](ai-review-evals/README.md) — a record of the AI's judgment calls on that issue, which a human scores afterward (`Instruction Fidelity`, `Result Satisfaction`). This is the evidence trail for deciding whether a class of AI decision can move from Human Review Everything to Human Review Risk.
+**AI review evaluations:** promoted from an experimental trial to standard practice at issue #99's close. Every `@claude close` also logs one new entry in [`ai-review-evals/`](ai-review-evals/README.md) — the AI fills in `Metadata`, `Task`, `Original User Request`, and `AI Decision`/`Decision Type` at close time (`Risk Level` defaults to `Medium`), while `Instruction Fidelity` and `Result Satisfaction` are left blank for a human to score afterward (unless the human supplies them directly in the close comment) — the AI never grades its own homework. This is the evidence trail for deciding whether a class of AI decision can move from Human Review Everything to Human Review Risk. **The close-step branch carrying these files must get a real PR opened (`--base develop`) before the close comment is done** — a posted compare link alone is not enough, or the files stay stranded off `develop` (issue #135).
 
 ---
 

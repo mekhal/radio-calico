@@ -168,6 +168,7 @@ Integration test: HLS player โหลด stream URL สำเร็จ
 - **Reuse-first** สร้างโค้ดที่ใช้ซ้ำได้ และเขียน unit test ครอบตัวที่ reuse
 - **งานตกหล่น → issue ใหม่** ไม่ลากงานที่พบเพิ่มเข้ามาใน loop ปัจจุบัน เน้นปิด issue ปัจจุบันให้จบ **ข้อยกเว้น:** ถ้างานที่ตกหล่นเป็นของ ticket ที่เกี่ยวเนื่องซึ่งถูก sequence ไว้แล้วใต้ parent story เดียวกัน ให้ไปคอมเมนต์ไว้ที่ ticket นั้นแทนการเปิด issue ใหม่ — คอมเมนต์แบบไม่แท็ก (`@claude`) เพื่อให้มนุษย์เป็นคนแท็กเองเมื่อเริ่มงานส่วนนั้น
 - **แยกชนิด PR** Test PR (ขั้น 4) และ Code PR (ขั้น 6) เป็นคนละ PR เพื่อ review เป็นชั้น ๆ — เว้นแต่มนุษย์จะสั่ง waive Test PR ไว้ชัดเจนในขั้น 3 โดย AI เสนอ waive ได้แต่ต้องไม่ตัดสินใจเองฝ่ายเดียว
+- **ตรวจสอบว่า branch เดิมเปิด PR แล้วหรือยัง** ทุกครั้งที่มี `@claude` trigger ใหม่ใน thread เดียวกัน AI ต้องเช็คว่า branch ที่เคยพูดถึงใน turn ก่อนหน้าของ thread นั้นมี PR เปิดจริงหรือไม่ แล้ว flag รายการที่ยังไม่มี แทนที่จะเดินหน้าต่อเงียบ ๆ
 
 ---
 
@@ -186,7 +187,7 @@ Integration test: HLS player โหลด stream URL สำเร็จ
 
 > **ทำไมเก็บใน repo เดียวกัน?** repo นี้มีไว้เพื่อสาธิตกระบวนการ AI-DLC แบบครบวงจร skills จึงสะสมอยู่ใน repo เดียวกับกระบวนการที่สร้างมันขึ้นมา แทนที่จะแยก checkout ต่างหาก
 
-**AI review evaluations:** เลื่อนสถานะจาก trial ทดลอง มาเป็นแนวปฏิบัติมาตรฐาน ตอนปิด issue #99 ทุกครั้งที่ `@claude close` จะบันทึกไฟล์ใหม่หนึ่งไฟล์ไว้ที่ [`ai-review-evals/`](ai-review-evals/README.md) — เป็นบันทึกการตัดสินใจของ AI ในแต่ละ issue ที่มนุษย์จะให้คะแนนย้อนหลัง (`Instruction Fidelity`, `Result Satisfaction`) เพื่อใช้เป็นหลักฐานประกอบการตัดสินใจว่าการตัดสินใจแบบไหนของ AI จะย้ายจาก Human Review Everything ไปเป็น Human Review Risk ได้
+**AI review evaluations:** เลื่อนสถานะจาก trial ทดลอง มาเป็นแนวปฏิบัติมาตรฐาน ตอนปิด issue #99 ทุกครั้งที่ `@claude close` จะบันทึกไฟล์ใหม่หนึ่งไฟล์ไว้ที่ [`ai-review-evals/`](ai-review-evals/README.md) — AI กรอก `Metadata`, `Task`, `Original User Request`, และ `AI Decision`/`Decision Type` ตอนปิดงาน (`Risk Level` ตั้งต้นเป็น `Medium`) ส่วน `Instruction Fidelity` และ `Result Satisfaction` เว้นว่างไว้ให้มนุษย์ให้คะแนนย้อนหลัง (เว้นแต่มนุษย์จะระบุคะแนนมาเองในคอมเมนต์ `@claude close`) — AI จะไม่ให้คะแนนงานตัวเอง ใช้เป็นหลักฐานประกอบการตัดสินใจว่าการตัดสินใจแบบไหนของ AI จะย้ายจาก Human Review Everything ไปเป็น Human Review Risk ได้ **branch ของขั้น close ที่มีไฟล์เหล่านี้ต้องเปิด PR จริง (`--base develop`) ก่อนคอมเมนต์ปิดงานจะถือว่าเสร็จ** — แค่โพสต์ compare link ไม่พอ ไม่งั้นไฟล์จะค้างอยู่นอก `develop` (issue #135)
 
 ---
 
