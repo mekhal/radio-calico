@@ -94,3 +94,92 @@ h3,
   padding: 1rem;
   font-size: 0.8125rem;
 }
+
+/* Ticket C (issue #101), AC1: groups the language + theme switches so they
+   sit together, right-aligned against the brand via .masthead .inner's
+   justify-content: space-between. */
+.masthead-toggles {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* AC1/AC4/AC5 (redesigned 2026-07-22 per human sign-off): both switches
+   share this pill-track + circular-thumb construction — only the track
+   color, thumb content, and which side "is-active" differ per switch. */
+.rc-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+  color: #ffffff;
+}
+
+.rc-switch-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.6);
+  transition: color 0.2s ease;
+}
+
+.rc-switch-label.is-active {
+  color: #ffffff;
+}
+
+.rc-switch-track {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.rc-switch-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+
+/* Theme switch: white thumb sliding on a blue track. The toggle's own
+   aria-checked semantics are unchanged from before the redesign (false =
+   dark, true = light), so the thumb position is intentionally the inverse
+   of aria-checked here, to keep "Light" on the left / "Dark" on the right
+   as requested. */
+.rc-switch--theme .rc-switch-track {
+  background: #4da6ff;
+}
+
+.rc-switch--theme[aria-checked="false"] .rc-switch-thumb {
+  transform: translateX(20px);
+}
+
+.rc-switch--theme[aria-checked="true"] .rc-switch-thumb {
+  transform: translateX(0);
+}
+
+/* Language switch: flag-icon thumb sliding on a brand-green track, "EN" on
+   the left (aria-checked=false) / "TH" on the right (aria-checked=true). */
+.rc-switch--lang .rc-switch-track {
+  background: var(--rc-forest-green);
+}
+
+.rc-switch--lang[aria-checked="true"] .rc-switch-thumb {
+  transform: translateX(20px);
+}
+
+.rc-switch--lang[aria-checked="false"] .rc-switch-thumb {
+  transform: translateX(0);
+}
