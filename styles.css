@@ -155,11 +155,14 @@ h3,
 
 /* Theme switch: white thumb (showing a moon/sun icon) sliding on a
    Style-Guide track color — Charcoal for the dark default, Calico Orange
-   once "Light" is active. The toggle's own aria-checked semantics are
-   unchanged from before the redesign (false = dark, true = light), so the
-   thumb position is intentionally the inverse of aria-checked here, to keep
-   "Light" on the left / "Dark" on the right as requested. Header bar color
-   itself is out of scope here (deferred per the 2026-07-22 review). */
+   once "Light" is active. Default theme stays Dark (2026-07-22 follow-up
+   review, options "ii" + keep-Dark-default): the thumb shows the side
+   clicking it would switch TO, not the currently-active side, so at the
+   Dark default the thumb sits on the Light (left) side, and once Light is
+   active it moves to the Dark (right) side. aria-checked itself still
+   reflects the actual current theme (false = dark, true = light) — only the
+   thumb's track position is inverted relative to it, by design. Header bar
+   color itself is out of scope here (deferred per the 2026-07-22 review). */
 .rc-switch--theme .rc-switch-track {
   background: var(--rc-charcoal);
 }
@@ -169,11 +172,11 @@ h3,
 }
 
 .rc-switch--theme[aria-checked="false"] .rc-switch-thumb {
-  transform: translateX(20px);
+  transform: translateX(0);
 }
 
 .rc-switch--theme[aria-checked="true"] .rc-switch-thumb {
-  transform: translateX(0);
+  transform: translateX(20px);
 }
 
 /* Language switch: flag-icon thumb sliding on a brand-green track, "EN" on

@@ -204,5 +204,43 @@
 
       unloadApp(root);
     });
+
+    it("flips the theme toggle's aria-checked to match the actual theme on every click (not inverted)", async () => {
+      window.localStorage.removeItem(LANGUAGE_STORAGE_KEY);
+      const root = await loadReady();
+
+      const themeToggle = findThemeToggle(root);
+      expect(themeToggle.getAttribute("aria-checked")).toBe("false");
+      expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
+
+      themeToggle.click();
+      await nextTick();
+      expect(document.documentElement.getAttribute("data-theme")).toBe("light");
+      expect(themeToggle.getAttribute("aria-checked")).toBe("true");
+
+      themeToggle.click();
+      await nextTick();
+      expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
+      expect(themeToggle.getAttribute("aria-checked")).toBe("false");
+
+      unloadApp(root);
+    });
+
+    it("renders the language toggle thumb as an SVG flag icon, not emoji/text that can fall back to literal country codes", async () => {
+      window.localStorage.removeItem(LANGUAGE_STORAGE_KEY);
+      const root = await loadReady();
+
+      const toggle = findLangToggle(root);
+      const thumb = toggle.querySelector(".rc-switch-thumb");
+      expect(thumb.querySelector("svg")).toBeTruthy();
+      expect((thumb.textContent || "").trim()).toBe("");
+
+      toggle.click();
+      await nextTick();
+      expect(thumb.querySelector("svg")).toBeTruthy();
+      expect((thumb.textContent || "").trim()).toBe("");
+
+      unloadApp(root);
+    });
   });
 })();

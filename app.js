@@ -370,6 +370,31 @@
     control.onLabel.classList.toggle("is-active", isOnActive);
   }
 
+  // Ticket C (issue #101) follow-up (2026-07-22 review): flag *emoji* fall
+  // back to literal "GB"/"TH" text on platforms with no color-emoji font for
+  // regional-indicator sequences (Windows/Linux commonly). Inline SVG renders
+  // identically everywhere, with no new CDN dependency.
+  const FLAG_ICONS = {
+    en:
+      '<svg viewBox="0 0 60 36" width="16" height="16" aria-hidden="true" focusable="false">' +
+      '<rect width="60" height="36" fill="#012169"/>' +
+      '<path d="M0,0 L60,36 M60,0 L0,36" stroke="#FFFFFF" stroke-width="6"/>' +
+      '<path d="M0,0 L60,36 M60,0 L0,36" stroke="#C8102E" stroke-width="2"/>' +
+      '<path d="M30,0 L30,36 M0,18 L60,18" stroke="#FFFFFF" stroke-width="10"/>' +
+      '<path d="M30,0 L30,36 M0,18 L60,18" stroke="#C8102E" stroke-width="6"/>' +
+      "</svg>",
+    th:
+      '<svg viewBox="0 0 60 36" width="16" height="16" aria-hidden="true" focusable="false">' +
+      '<rect width="60" height="36" fill="#A51931"/>' +
+      '<rect y="6" width="60" height="24" fill="#F4F5F8"/>' +
+      '<rect y="12" width="60" height="12" fill="#2D2A4A"/>' +
+      "</svg>",
+  };
+
+  function setLangThumbFlag(thumb, lang) {
+    thumb.innerHTML = FLAG_ICONS[lang === "th" ? "th" : "en"];
+  }
+
   function bindSwitchActivation(wrapper, onActivate) {
     wrapper.addEventListener("click", onActivate);
     wrapper.addEventListener("keydown", (event) => {
@@ -411,7 +436,11 @@
       const isDark = document.documentElement.getAttribute("data-theme") === "dark";
       const nextTheme = isDark ? "light" : "dark";
       setTheme(nextTheme);
-      themeToggle.setAttribute("aria-checked", String(!isDark));
+      // aria-checked convention: true = light, false = dark. Must key off
+      // nextTheme (the state we're switching TO), not the pre-toggle isDark
+      // — using !isDark here previously left aria-checked permanently
+      // inverted from the actual theme after the first click.
+      themeToggle.setAttribute("aria-checked", String(nextTheme === "light"));
       setSwitchActiveSide(themeSwitch, nextTheme === "dark");
       themeSwitch.thumb.textContent = nextTheme === "dark" ? "🌙" : "☀️";
     }
@@ -429,7 +458,7 @@
     langSwitch.onLabel.textContent = "TH";
     langToggle.setAttribute("aria-checked", String(currentLanguage === "th"));
     setSwitchActiveSide(langSwitch, currentLanguage === "th");
-    langSwitch.thumb.textContent = currentLanguage === "th" ? "🇹🇭" : "🇬🇧";
+    setLangThumbFlag(langSwitch.thumb, currentLanguage);
 
     function toggleLanguage() {
       if (!TRANSLATIONS) return;
@@ -437,7 +466,7 @@
       setStoredLanguage(nextLanguage);
       langToggle.setAttribute("aria-checked", String(nextLanguage === "th"));
       setSwitchActiveSide(langSwitch, nextLanguage === "th");
-      langSwitch.thumb.textContent = nextLanguage === "th" ? "🇹🇭" : "🇬🇧";
+      setLangThumbFlag(langSwitch.thumb, nextLanguage);
       applyLanguage(nextLanguage);
     }
 
