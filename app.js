@@ -25,6 +25,37 @@
     document.documentElement.setAttribute("data-theme", theme);
   }
 
+  // Ticket C (issue #101), AC6 (amended per review comment on 2026-07-22):
+  // strings live in i18n/en.json + i18n/th.json, loaded via fetch() rather
+  // than an inline dictionary — confirmed safe since the human signed off
+  // that this app always runs over http(s) (never opened via file://, whose
+  // CORS policy would otherwise block the fetch — see tests/README.md).
+  //
+  // window.__I18N_BASE_PATH__ mirrors the window.__APP_JS_PATH__ override
+  // pattern below: tests/test-runner.html sets it to "../i18n/" because that
+  // page lives one directory under the repo root, while the live index.html
+  // page (and the footer's Test Report modal, which also runs from that same
+  // root document) can resolve the default "i18n/" as-is.
+  const LANGUAGE_STORAGE_KEY = "radioCalicoLanguage";
+  const I18N_BASE_PATH = window.__I18N_BASE_PATH__ || "i18n/";
+
+  function getStoredLanguage() {
+    return window.localStorage.getItem(LANGUAGE_STORAGE_KEY) === "th" ? "th" : "en";
+  }
+
+  function setStoredLanguage(lang) {
+    window.localStorage.setItem(LANGUAGE_STORAGE_KEY, lang);
+  }
+
+  async function loadTranslations() {
+    const [enResponse, thResponse] = await Promise.all([
+      fetch(`${I18N_BASE_PATH}en.json`),
+      fetch(`${I18N_BASE_PATH}th.json`),
+    ]);
+    const [en, th] = await Promise.all([enResponse.json(), thResponse.json()]);
+    return { en, th };
+  }
+
   // Issue #41: on-demand Test Report modal. Runs the suite in-DOM (no
   // <iframe>) inside an off-screen fixtures container, distinct from the
   // live app's #root. Guarded by a document-wide flag because the suite
@@ -300,9 +331,62 @@
     runTestReportSuite(summary, results, isClosed);
   }
 
+  // Ticket C (issue #101), AC1/AC5: both the theme and language toggles
+  // share this pill/thumb "sliding switch" construction (role="switch",
+  // click + Enter/Space keyboard support — same interaction pattern the
+  // theme toggle already had pre-redesign), styled via the .rc-switch rules
+  // in styles.css. Side labels flank the track; which one is emphasized is
+  // controlled by toggling "is-active" on offLabel/onLabel.
+  function createSwitch(testid, ariaLabel, variantClass) {
+    const wrapper = document.createElement("div");
+    wrapper.dataset.testid = testid;
+    wrapper.className = `rc-switch ${variantClass}`;
+    wrapper.setAttribute("role", "switch");
+    wrapper.setAttribute("tabindex", "0");
+    wrapper.setAttribute("aria-label", ariaLabel);
+    wrapper.setAttribute("aria-checked", "false");
+
+    const offLabel = document.createElement("span");
+    offLabel.className = "rc-switch-label is-active";
+
+    const track = document.createElement("span");
+    track.className = "rc-switch-track";
+    const thumb = document.createElement("span");
+    thumb.className = "rc-switch-thumb";
+    track.appendChild(thumb);
+
+    const onLabel = document.createElement("span");
+    onLabel.className = "rc-switch-label";
+
+    wrapper.appendChild(offLabel);
+    wrapper.appendChild(track);
+    wrapper.appendChild(onLabel);
+
+    return { wrapper, offLabel, onLabel, thumb };
+  }
+
+  function setSwitchActiveSide(control, isOnActive) {
+    control.offLabel.classList.toggle("is-active", !isOnActive);
+    control.onLabel.classList.toggle("is-active", isOnActive);
+  }
+
+  function bindSwitchActivation(wrapper, onActivate) {
+    wrapper.addEventListener("click", onActivate);
+    wrapper.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " " || event.key === "Spacebar") {
+        event.preventDefault();
+        onActivate();
+      }
+    });
+  }
+
   function initApp() {
     ensureThemeStyles();
     setTheme("dark");
+
+    let TRANSLATIONS = null;
+    let currentLanguage = getStoredLanguage();
+    let currentStatusKey = "statusLoading";
 
     // Prefer the root tests/load-app.js's loadApp() hands us explicitly —
     // document.getElementById("root") resolves document-wide and would pick
@@ -312,46 +396,53 @@
     const heading = document.createElement("h1");
     heading.textContent = "Radio Calico";
 
-    // Not a <button> on purpose — Ticket A's tests assert exactly one
-    // <button> exists (the Listen Now control), so the theme switch uses a
-    // role="switch" div with equivalent keyboard support instead.
-    const themeToggle = document.createElement("div");
-    themeToggle.dataset.testid = "theme-toggle";
-    themeToggle.setAttribute("role", "switch");
-    themeToggle.setAttribute("tabindex", "0");
-    themeToggle.setAttribute("aria-label", "Toggle dark/light theme");
-    themeToggle.setAttribute("aria-checked", "false");
-    themeToggle.textContent = "🌙 Dark";
-    Object.assign(themeToggle.style, {
-      display: "inline-block",
-      background: "transparent",
-      color: REST_BACKGROUND,
-      border: `2px solid ${REST_BACKGROUND}`,
-      borderRadius: "4px",
-      padding: "0.5rem 1rem",
-      textTransform: "uppercase",
-      letterSpacing: "0.05em",
-      cursor: "pointer",
-    });
+    // Ticket C (issue #101), AC4 (redesign confirmed at the 2026-07-22
+    // review): sliding-switch style — track + thumb, "Light"/"Dark" side
+    // labels — replacing the prior bordered-text-box control. testid,
+    // role="switch", and click/keyboard behavior are unchanged.
+    const themeSwitch = createSwitch("theme-toggle", "Toggle dark/light theme", "rc-switch--theme");
+    const themeToggle = themeSwitch.wrapper;
+    themeSwitch.offLabel.textContent = "Light";
+    themeSwitch.onLabel.textContent = "Dark";
+    setSwitchActiveSide(themeSwitch, true); // defaults to dark (AC-unchanged default)
 
     function toggleTheme() {
       const isDark = document.documentElement.getAttribute("data-theme") === "dark";
       const nextTheme = isDark ? "light" : "dark";
       setTheme(nextTheme);
       themeToggle.setAttribute("aria-checked", String(!isDark));
-      themeToggle.textContent = nextTheme === "dark" ? "🌙 Dark" : "☀️ Light";
+      setSwitchActiveSide(themeSwitch, nextTheme === "dark");
     }
 
-    themeToggle.addEventListener("click", toggleTheme);
-    themeToggle.addEventListener("keydown", (event) => {
-      if (event.key === "Enter" || event.key === " " || event.key === "Spacebar") {
-        event.preventDefault();
-        toggleTheme();
-      }
-    });
+    bindSwitchActivation(themeToggle, toggleTheme);
+
+    // Ticket C (issue #101), AC2/AC5: a two-state EN/TH switch (not a
+    // dropdown), defaulting to English. The thumb shows the active
+    // language's flag; the side labels stay the literal codes "EN"/"TH" in
+    // both languages (a code isn't translated), so only the active side and
+    // the aria-label change with the current app language.
+    const langSwitch = createSwitch("language-toggle", "Switch language", "rc-switch--lang");
+    const langToggle = langSwitch.wrapper;
+    langSwitch.offLabel.textContent = "EN";
+    langSwitch.onLabel.textContent = "TH";
+    langToggle.setAttribute("aria-checked", String(currentLanguage === "th"));
+    setSwitchActiveSide(langSwitch, currentLanguage === "th");
+    langSwitch.thumb.textContent = currentLanguage === "th" ? "🇹🇭" : "🇬🇧";
+
+    function toggleLanguage() {
+      if (!TRANSLATIONS) return;
+      const nextLanguage = currentLanguage === "en" ? "th" : "en";
+      setStoredLanguage(nextLanguage);
+      langToggle.setAttribute("aria-checked", String(nextLanguage === "th"));
+      setSwitchActiveSide(langSwitch, nextLanguage === "th");
+      langSwitch.thumb.textContent = nextLanguage === "th" ? "🇹🇭" : "🇬🇧";
+      applyLanguage(nextLanguage);
+    }
+
+    bindSwitchActivation(langToggle, toggleLanguage);
 
     // Ticket B (issue #100), AC7: nav bar landmark Ticket C's toggles (#101)
-    // will be added to, alongside the theme toggle already living here.
+    // are added to, right-aligned as a group alongside the brand.
     const navBar = document.createElement("header");
     navBar.dataset.testid = "nav-bar";
     navBar.className = "masthead mb-auto";
@@ -371,8 +462,17 @@
 
     brand.appendChild(brandLogo);
     brand.appendChild(brandText);
+
+    // Groups the two switches so they sit together, right-aligned against
+    // the brand (`.masthead .inner`'s justify-content: space-between), per
+    // Ticket C AC1 — rather than each control individually claiming a slot.
+    const navToggles = document.createElement("div");
+    navToggles.className = "masthead-toggles";
+    navToggles.appendChild(langToggle);
+    navToggles.appendChild(themeToggle);
+
     navBarInner.appendChild(brand);
-    navBarInner.appendChild(themeToggle);
+    navBarInner.appendChild(navToggles);
     navBar.appendChild(navBarInner);
 
     // Ticket B (issue #100): footer sits in normal document flow at the
@@ -427,6 +527,10 @@
     siteLink.rel = "noopener noreferrer";
     siteLink.textContent = "radio-calico.com";
     prependIcon(siteLink, "fa-solid fa-radio");
+    // Text node captured after the icon is prepended (so it stays the last
+    // child) — lets applyLanguage() below update the label without wiping
+    // out the prepended <i> icon the way reassigning .textContent would.
+    const siteLinkTextNode = siteLink.lastChild;
 
     const testReportButton = document.createElement("button");
     testReportButton.type = "button";
@@ -443,6 +547,7 @@
     });
     testReportButton.addEventListener("click", () => openTestReportModal(testReportButton));
     prependIcon(testReportButton, "fa-solid fa-clipboard-check");
+    const testReportButtonTextNode = testReportButton.lastChild;
 
     const lintReportLink = document.createElement("a");
     lintReportLink.dataset.testid = "footer-lint-report-link";
@@ -452,6 +557,7 @@
     lintReportLink.textContent = "Lint Report";
     Object.assign(lintReportLink.style, { color: "#38A29D" });
     prependIcon(lintReportLink, "fa-solid fa-broom");
+    const lintReportLinkTextNode = lintReportLink.lastChild;
 
     const securityReportLink = document.createElement("a");
     securityReportLink.dataset.testid = "footer-security-report-link";
@@ -461,6 +567,7 @@
     securityReportLink.textContent = "Security Scan Report";
     Object.assign(securityReportLink.style, { color: "#38A29D" });
     prependIcon(securityReportLink, "fa-solid fa-shield-halved");
+    const securityReportLinkTextNode = securityReportLink.lastChild;
 
     const githubLink = createIconLink(
       "footer-github-link",
@@ -468,12 +575,14 @@
       "GitHub",
       "fa-brands fa-github"
     );
+    const githubLinkTextNode = githubLink.lastChild;
     const linkedinLink = createIconLink(
       "footer-linkedin-link",
       "https://www.linkedin.com/in/mekhalomlao/",
       "LinkedIn",
       "fa-brands fa-linkedin"
     );
+    const linkedinLinkTextNode = linkedinLink.lastChild;
 
     linksRow.appendChild(siteLink);
     linksRow.appendChild(testReportButton);
@@ -581,14 +690,15 @@
     let isPlaying = false;
 
     function togglePlayback() {
+      const t = TRANSLATIONS && TRANSLATIONS[currentLanguage];
       if (isPlaying) {
         audio.pause();
         isPlaying = false;
-        button.textContent = "Listen Now";
+        button.textContent = t ? t.listenNow : "Listen Now";
       } else {
         audio.play();
         isPlaying = true;
-        button.textContent = "Pause";
+        button.textContent = t ? t.pause : "Pause";
       }
     }
 
@@ -605,6 +715,66 @@
     button.addEventListener("mouseleave", () => {
       button.style.background = REST_BACKGROUND;
     });
+
+    // Mirrors the English default text hardcoded into `status` above, so
+    // status updates that land before the i18n fetch resolves (a real race,
+    // not just a theoretical one — HLS/audio events can fire before two
+    // same-origin JSON fetches complete) still show the right English word
+    // instead of leaving stale "loading" text on screen.
+    const STATUS_FALLBACK_EN = {
+      statusLoading: "Status: loading",
+      statusReady: "Status: ready",
+      statusError: "Status: error",
+      statusUnsupported: "Status: unsupported",
+    };
+
+    function setStatus(key) {
+      currentStatusKey = key;
+      const t = TRANSLATIONS && TRANSLATIONS[currentLanguage];
+      status.textContent = t ? t[key] : STATUS_FALLBACK_EN[key];
+    }
+
+    // Ticket C (issue #101), AC3: re-renders every user-facing string from
+    // TRANSLATIONS[lang] once the i18n fetch has resolved (a no-op before
+    // that, guarded above in toggleLanguage()/setStatus()/togglePlayback()),
+    // looking up state-dependent text (play/pause, current status) by
+    // current app state rather than hardcoding it, so a language switch
+    // mid-playback still shows the right word. Called once translations
+    // finish loading below to apply the language restored from localStorage
+    // (or the "en" default) to the already-built DOM, and again on every
+    // language-toggle click.
+    function applyLanguage(lang) {
+      if (!TRANSLATIONS) return;
+      currentLanguage = lang;
+      const t = TRANSLATIONS[lang];
+      document.documentElement.lang = lang;
+
+      heading.textContent = t.heading;
+      brandText.textContent = t.heading;
+
+      button.textContent = isPlaying ? t.pause : t.listenNow;
+      status.textContent = t[currentStatusKey];
+      liveIndicator.textContent = t.live;
+      bufferingIndicator.textContent = t.buffering;
+      errorMessage.textContent = t.errorMessage;
+      refreshButton.textContent = t.refresh;
+
+      themeToggle.setAttribute("aria-label", t.themeToggleAriaLabel);
+      themeSwitch.offLabel.textContent = t.themeLabelLight;
+      themeSwitch.onLabel.textContent = t.themeLabelDark;
+
+      langToggle.setAttribute("aria-label", t.languageToggleAriaLabel);
+
+      disclaimer.textContent = t.footerDisclaimer;
+      siteLinkTextNode.data = t.footerSiteLink;
+      testReportButtonTextNode.data = t.footerTestReport;
+      lintReportLinkTextNode.data = t.footerLintReport;
+      securityReportLinkTextNode.data = t.footerSecurityReport;
+      githubLinkTextNode.data = t.footerGithub;
+      githubLink.title = t.footerGithub;
+      linkedinLinkTextNode.data = t.footerLinkedin;
+      linkedinLink.title = t.footerLinkedin;
+    }
 
     // Ticket B (issue #100), AC2: Bootstrap 4 Cover structure — nav bar,
     // then a centered hero that grows to fill remaining height, then the
@@ -628,6 +798,16 @@
 
     root.appendChild(siteWrapper);
 
+    // Ticket C (issue #101), AC6: fetches i18n/en.json + i18n/th.json, then
+    // re-renders the language restored from localStorage (or the "en"
+    // default, a no-op) across the DOM just built above (AC3). Exposed as a
+    // named promise so tests can deterministically await it instead of
+    // racing an arbitrary number of ticks against the fetch.
+    window.__i18nReady = loadTranslations().then((data) => {
+      TRANSLATIONS = data;
+      applyLanguage(currentLanguage);
+    });
+
     let hls;
 
     if (window.Hls && window.Hls.isSupported()) {
@@ -635,11 +815,11 @@
       hls.loadSource(STREAM_URL);
       hls.attachMedia(audio);
       hls.on(window.Hls.Events.MANIFEST_PARSED, () => {
-        status.textContent = "Status: ready";
+        setStatus("statusReady");
       });
       hls.on(window.Hls.Events.ERROR, (_event, data) => {
         if (data.fatal) {
-          status.textContent = "Status: error";
+          setStatus("statusError");
           showFatalError();
         }
       });
@@ -647,14 +827,14 @@
       // Safari has native HLS support
       audio.src = STREAM_URL;
       audio.addEventListener("loadedmetadata", () => {
-        status.textContent = "Status: ready";
+        setStatus("statusReady");
       });
       audio.addEventListener("error", () => {
-        status.textContent = "Status: error";
+        setStatus("statusError");
         showFatalError();
       });
     } else {
-      status.textContent = "Status: unsupported";
+      setStatus("statusUnsupported");
     }
   }
 

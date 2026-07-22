@@ -59,6 +59,15 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
 
+    <!-- Ticket C (issue #101), AC6: app.js fetches i18n/en.json + i18n/th.json
+         relative to the page it's running from. This page lives one
+         directory under the repo root (unlike the live index.html, which
+         app.js's default "i18n/" path assumes), so it needs the "../" prefix
+         — mirrors the existing window.__APP_JS_PATH__ override pattern. -->
+    <script>
+      window.__I18N_BASE_PATH__ = "../i18n/";
+    </script>
+
     <script src="assert.js"></script>
     <script src="mock-hls.js"></script>
     <script src="load-app.js"></script>

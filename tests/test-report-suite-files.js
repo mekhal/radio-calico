@@ -27,6 +27,7 @@
     "hero-listen-now-control.test.js",
     "status-indicators-error-recovery.test.js",
     "theme-toggle-footer.test.js",
+    "language-toggle.test.js",
     "app-mount-scoping.test.js",
     "footer-lint-report-link.test.js",
     "footer-security-report-link.test.js",
