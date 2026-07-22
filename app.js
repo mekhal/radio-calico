@@ -405,6 +405,7 @@
     themeSwitch.offLabel.textContent = "Light";
     themeSwitch.onLabel.textContent = "Dark";
     setSwitchActiveSide(themeSwitch, true); // defaults to dark (AC-unchanged default)
+    themeSwitch.thumb.textContent = "🌙";
 
     function toggleTheme() {
       const isDark = document.documentElement.getAttribute("data-theme") === "dark";
@@ -412,6 +413,7 @@
       setTheme(nextTheme);
       themeToggle.setAttribute("aria-checked", String(!isDark));
       setSwitchActiveSide(themeSwitch, nextTheme === "dark");
+      themeSwitch.thumb.textContent = nextTheme === "dark" ? "🌙" : "☀️";
     }
 
     bindSwitchActivation(themeToggle, toggleTheme);

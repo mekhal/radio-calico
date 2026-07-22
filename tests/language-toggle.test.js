@@ -185,5 +185,24 @@
 
       unloadApp(root);
     });
+
+    it("shows a moon/sun icon on the theme toggle's thumb, matching the current theme", async () => {
+      window.localStorage.removeItem(LANGUAGE_STORAGE_KEY);
+      const root = await loadReady();
+
+      const themeToggle = findThemeToggle(root);
+      const thumb = themeToggle.querySelector(".rc-switch-thumb");
+      expect(thumb.textContent).toBe("🌙");
+
+      themeToggle.click();
+      await nextTick();
+      expect(thumb.textContent).toBe("☀️");
+
+      themeToggle.click();
+      await nextTick();
+      expect(thumb.textContent).toBe("🌙");
+
+      unloadApp(root);
+    });
   });
 })();
