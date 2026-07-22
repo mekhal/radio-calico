@@ -7,6 +7,8 @@
   --rc-mint: #d8f2d5;
   --rc-forest-green: #1f4e23;
   --rc-teal: #38a29d;
+  --rc-charcoal: #231f20;
+  --rc-calico-orange: #efa63c;
 }
 
 html,
@@ -151,13 +153,19 @@ h3,
   transition: transform 0.2s ease;
 }
 
-/* Theme switch: white thumb sliding on a blue track. The toggle's own
-   aria-checked semantics are unchanged from before the redesign (false =
-   dark, true = light), so the thumb position is intentionally the inverse
-   of aria-checked here, to keep "Light" on the left / "Dark" on the right
-   as requested. */
+/* Theme switch: white thumb (showing a moon/sun icon) sliding on a
+   Style-Guide track color — Charcoal for the dark default, Calico Orange
+   once "Light" is active. The toggle's own aria-checked semantics are
+   unchanged from before the redesign (false = dark, true = light), so the
+   thumb position is intentionally the inverse of aria-checked here, to keep
+   "Light" on the left / "Dark" on the right as requested. Header bar color
+   itself is out of scope here (deferred per the 2026-07-22 review). */
 .rc-switch--theme .rc-switch-track {
-  background: #4da6ff;
+  background: var(--rc-charcoal);
+}
+
+.rc-switch--theme[aria-checked="true"] .rc-switch-track {
+  background: var(--rc-calico-orange);
 }
 
 .rc-switch--theme[aria-checked="false"] .rc-switch-thumb {
