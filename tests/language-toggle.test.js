@@ -242,5 +242,19 @@
 
       unloadApp(root);
     });
+
+    it("crops the language toggle's flag SVG to fill the full circular thumb (2026-07-23 review: full-circle flag, not a small letterboxed rectangle)", async () => {
+      window.localStorage.removeItem(LANGUAGE_STORAGE_KEY);
+      const root = await loadReady();
+
+      const toggle = findLangToggle(root);
+      const thumb = toggle.querySelector(".rc-switch-thumb");
+      const svg = thumb.querySelector("svg");
+      expect(svg.getAttribute("width")).toBe("20");
+      expect(svg.getAttribute("height")).toBe("20");
+      expect(svg.getAttribute("preserveAspectRatio")).toBe("xMidYMid slice");
+
+      unloadApp(root);
+    });
   });
 })();

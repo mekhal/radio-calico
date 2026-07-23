@@ -374,9 +374,17 @@
   // back to literal "GB"/"TH" text on platforms with no color-emoji font for
   // regional-indicator sequences (Windows/Linux commonly). Inline SVG renders
   // identically everywhere, with no new CDN dependency.
+  //
+  // Follow-up (2026-07-23 review): the flag art is a 5:3 rectangle (viewBox
+  // 60x36), so sizing the <svg> smaller than the thumb left it floating as a
+  // small letterboxed rectangle inside the circular thumb rather than filling
+  // it. Sizing the <svg> to match the thumb (20x20) and cropping via
+  // preserveAspectRatio="xMidYMid slice" (cover, not letterbox) fills the
+  // full circle; `.rc-switch-thumb`'s `overflow: hidden` (styles.css) clips
+  // the square SVG's corners to the thumb's circular shape.
   const FLAG_ICONS = {
     en:
-      '<svg viewBox="0 0 60 36" width="16" height="16" aria-hidden="true" focusable="false">' +
+      '<svg viewBox="0 0 60 36" width="20" height="20" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">' +
       '<rect width="60" height="36" fill="#012169"/>' +
       '<path d="M0,0 L60,36 M60,0 L0,36" stroke="#FFFFFF" stroke-width="6"/>' +
       '<path d="M0,0 L60,36 M60,0 L0,36" stroke="#C8102E" stroke-width="2"/>' +
@@ -384,7 +392,7 @@
       '<path d="M30,0 L30,36 M0,18 L60,18" stroke="#C8102E" stroke-width="6"/>' +
       "</svg>",
     th:
-      '<svg viewBox="0 0 60 36" width="16" height="16" aria-hidden="true" focusable="false">' +
+      '<svg viewBox="0 0 60 36" width="20" height="20" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">' +
       '<rect width="60" height="36" fill="#A51931"/>' +
       '<rect y="6" width="60" height="24" fill="#F4F5F8"/>' +
       '<rect y="12" width="60" height="12" fill="#2D2A4A"/>' +
