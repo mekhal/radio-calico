@@ -144,6 +144,7 @@ h3,
   width: 20px;
   height: 20px;
   border-radius: 50%;
+  overflow: hidden;
   background: #ffffff;
   display: flex;
   align-items: center;
