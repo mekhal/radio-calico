@@ -1,0 +1,143 @@
+:root {
+  --chloe-sidebar-w: 88px;
+  --chloe-sidebar-bar-h: 64px;
+  --chloe-pink: #f0c6d2;
+  --chloe-pink-deep: #d98fa3;
+  --chloe-sage: #eaf1e6;
+  --chloe-ink: #2f2a2c;
+}
+
+body {
+  margin: 0;
+  background: var(--chloe-sage);
+  color: var(--chloe-ink);
+  font-family: "Cormorant Garamond", "Playfair Display", serif;
+}
+
+/* --- Ticket A: fixed vertical social sidebar (also the page footer) --- */
+.chloe-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: var(--chloe-sidebar-w);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 0;
+  background: #ffffff;
+  border-right: 1px solid rgba(0, 0, 0, 0.08);
+  z-index: 1030;
+}
+
+.chloe-sidebar__icons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.chloe-sidebar__icons a {
+  color: var(--chloe-ink);
+  font-size: 1.25rem;
+  line-height: 1;
+  text-decoration: none;
+}
+
+.chloe-sidebar__icons a:hover {
+  color: var(--chloe-pink-deep);
+}
+
+.chloe-sidebar__copy {
+  writing-mode: vertical-rl;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  margin: 0;
+  opacity: 0.7;
+}
+
+/* --- Ticket A: header --- */
+.chloe-page {
+  padding-left: var(--chloe-sidebar-w);
+}
+
+.chloe-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1.5rem 2rem;
+}
+
+.chloe-wordmark {
+  font-family: "Playfair Display", serif;
+  font-style: italic;
+  font-weight: 700;
+  font-size: 2rem;
+  color: var(--chloe-pink-deep);
+}
+
+.chloe-nav {
+  display: flex;
+  gap: 1.75rem;
+}
+
+.chloe-nav a {
+  font-family: "Cormorant Garamond", serif;
+  font-style: italic;
+  font-size: 1.1rem;
+  color: var(--chloe-ink);
+  text-decoration: none;
+}
+
+.chloe-nav a:hover {
+  color: var(--chloe-pink-deep);
+}
+
+.chloe-main {
+  padding: 0 2rem 2rem;
+  min-height: 40vh;
+}
+
+/* --- Ticket A: mobile — sidebar collapses to a bottom bar --- */
+@media (max-width: 767.98px) {
+  .chloe-sidebar {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: var(--chloe-sidebar-bar-h);
+    flex-direction: row;
+    justify-content: center;
+    padding: 0.5rem 0;
+    border-right: none;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+  }
+
+  .chloe-sidebar__icons {
+    flex-direction: row;
+    gap: 1.25rem;
+  }
+
+  .chloe-sidebar__copy {
+    display: none;
+  }
+
+  .chloe-page {
+    padding-left: 0;
+    padding-bottom: var(--chloe-sidebar-bar-h);
+  }
+
+  .chloe-header {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .chloe-nav {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+}
