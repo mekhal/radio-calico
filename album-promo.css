@@ -37,7 +37,6 @@ body {
   justify-content: center;
   padding: 1.5rem 0;
   background: transparent;
-  border-right: 1px solid rgba(0, 0, 0, 0.08);
   z-index: 1030;
 }
 
@@ -246,8 +245,6 @@ body {
     flex-direction: row;
     justify-content: center;
     padding: 0.5rem 0;
-    border-right: none;
-    border-top: 1px solid rgba(0, 0, 0, 0.08);
   }
 
   .chloe-sidebar__icons {
