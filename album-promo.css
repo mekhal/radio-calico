@@ -69,30 +69,88 @@ body {
   border-top: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-.chloe-sidebar__theme-btn {
-  background: transparent;
-  border: none;
+/* Follow-up review comment on PR #166 (2026-07-24): theme/language controls
+   redone as app.js's sliding "pill" switch (track + thumb, flanking on/off
+   labels) instead of a plain icon-button/select pair — oriented vertically
+   since the sidebar is a narrow fixed column (desktop), flipped to
+   horizontal on the mobile bottom bar below (more width there, less
+   height). Colors come from this page's own --chloe-* palette rather than
+   app.js's --rc-* vars, per the self-contained-page constraint. */
+.chloe-switch {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  cursor: pointer;
+  user-select: none;
   color: var(--chloe-ink);
-  font-size: 1.15rem;
+}
+
+.chloe-switch-label {
+  font-size: 0.55rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.5;
   line-height: 1;
-  cursor: pointer;
-  padding: 0;
+  transition: opacity 0.2s ease;
 }
 
-.chloe-sidebar__theme-btn:hover {
-  color: var(--chloe-pink-deep);
+.chloe-switch-label.is-active {
+  opacity: 1;
 }
 
-.chloe-sidebar__lang-select {
-  font-family: "Cormorant Garamond", serif;
-  font-size: 0.75rem;
-  letter-spacing: 0.05em;
-  color: var(--chloe-ink);
-  background: transparent;
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  border-radius: 4px;
-  padding: 0.15rem 0.3rem;
-  cursor: pointer;
+.chloe-switch-track {
+  position: relative;
+  width: 22px;
+  height: 38px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.chloe-switch-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+
+.chloe-switch--theme .chloe-switch-track {
+  background: var(--chloe-pink-deep);
+}
+
+.chloe-switch--theme[aria-checked="true"] .chloe-switch-track {
+  background: var(--chloe-ink);
+}
+
+.chloe-switch--theme[aria-checked="false"] .chloe-switch-thumb {
+  transform: translateY(0);
+}
+
+.chloe-switch--theme[aria-checked="true"] .chloe-switch-thumb {
+  transform: translateY(18px);
+}
+
+.chloe-switch--lang .chloe-switch-track {
+  background: var(--chloe-mint);
+}
+
+.chloe-switch--lang[aria-checked="false"] .chloe-switch-thumb {
+  transform: translateY(0);
+}
+
+.chloe-switch--lang[aria-checked="true"] .chloe-switch-thumb {
+  transform: translateY(18px);
 }
 
 /* --- Ticket A: header --- */
@@ -210,6 +268,26 @@ body {
     padding-left: 0.75rem;
     border-top: none;
     border-left: 1px solid rgba(0, 0, 0, 0.08);
+  }
+
+  .chloe-switch {
+    flex-direction: row;
+    gap: 0.35rem;
+  }
+
+  .chloe-switch-track {
+    width: 38px;
+    height: 22px;
+  }
+
+  .chloe-switch--theme[aria-checked="false"] .chloe-switch-thumb,
+  .chloe-switch--lang[aria-checked="false"] .chloe-switch-thumb {
+    transform: translateX(0);
+  }
+
+  .chloe-switch--theme[aria-checked="true"] .chloe-switch-thumb,
+  .chloe-switch--lang[aria-checked="true"] .chloe-switch-thumb {
+    transform: translateX(18px);
   }
 
   .chloe-page {

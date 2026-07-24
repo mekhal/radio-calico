@@ -3,5 +3,9 @@
   "disclaimer": "Radio Calico เป็นสถานีวิทยุอินเทอร์เน็ตอิสระ เพลงทั้งหมดยังคงเป็นทรัพย์สินของเจ้าของลิขสิทธิ์",
   "copyright": "&copy; 2026 Radio Calico สงวนสิทธิ์ภายใต้สัญญาอนุญาต MIT",
   "themeToggleLabel": "สลับธีมมืด/สว่าง",
-  "langSelectLabel": "ภาษา"
+  "themeLabelLight": "สว่าง",
+  "themeLabelDark": "มืด",
+  "languageToggleLabel": "สลับภาษา",
+  "langLabelEn": "English",
+  "langLabelTh": "Thai"
 }

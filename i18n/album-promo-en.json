@@ -3,5 +3,9 @@
   "disclaimer": "Radio Calico is an independent internet radio stream. All music remains the property of its respective owners.",
   "copyright": "&copy; 2026 Radio Calico. Released under the MIT License.",
   "themeToggleLabel": "Toggle dark theme",
-  "langSelectLabel": "Language"
+  "themeLabelLight": "Light",
+  "themeLabelDark": "Dark",
+  "languageToggleLabel": "Switch language",
+  "langLabelEn": "English",
+  "langLabelTh": "Thai"
 }

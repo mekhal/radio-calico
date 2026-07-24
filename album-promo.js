@@ -104,66 +104,148 @@
     return link;
   }
 
+  // Follow-up review comment on PR #166 (2026-07-24): mirror app.js's sliding
+  // "pill" switch (track + thumb, flanking on/off labels, role="switch")
+  // instead of the plain icon-button/select pair, oriented vertically here
+  // since the sidebar is a narrow fixed column rather than app.js's
+  // horizontal masthead bar (a media-query override in album-promo.css
+  // flips it back to horizontal on the mobile bottom-bar layout, where
+  // there's width but not height to spare). Kept as this page's own
+  // createSwitch()/FLAG_ICONS copy rather than imported from app.js, per the
+  // AC6 self-contained-page constraint.
+  function createSwitch(testid, ariaLabel, variantClass) {
+    const wrapper = document.createElement("div");
+    wrapper.dataset.testid = testid;
+    wrapper.className = `chloe-switch ${variantClass}`;
+    wrapper.setAttribute("role", "switch");
+    wrapper.setAttribute("tabindex", "0");
+    wrapper.setAttribute("aria-label", ariaLabel);
+    wrapper.setAttribute("aria-checked", "false");
+
+    const offLabel = document.createElement("span");
+    offLabel.className = "chloe-switch-label is-active";
+
+    const track = document.createElement("span");
+    track.className = "chloe-switch-track";
+    const thumb = document.createElement("span");
+    thumb.className = "chloe-switch-thumb";
+    track.appendChild(thumb);
+
+    const onLabel = document.createElement("span");
+    onLabel.className = "chloe-switch-label";
+
+    wrapper.appendChild(offLabel);
+    wrapper.appendChild(track);
+    wrapper.appendChild(onLabel);
+
+    return { wrapper, offLabel, onLabel, thumb };
+  }
+
+  function setSwitchActiveSide(control, isOnActive) {
+    control.offLabel.classList.toggle("is-active", !isOnActive);
+    control.onLabel.classList.toggle("is-active", isOnActive);
+  }
+
+  function bindSwitchActivation(wrapper, onActivate) {
+    wrapper.addEventListener("click", onActivate);
+    wrapper.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " " || event.key === "Spacebar") {
+        event.preventDefault();
+        onActivate();
+      }
+    });
+  }
+
+  // Same flag art as app.js's FLAG_ICONS (issue #101 follow-up review):
+  // inline SVG so the language switch's thumb renders identically across
+  // platforms with no color-emoji font, cropped to fill the circular thumb
+  // via preserveAspectRatio="xMidYMid slice".
+  const FLAG_ICONS = {
+    en:
+      '<svg viewBox="0 0 60 36" width="16" height="16" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">' +
+      '<rect width="60" height="36" fill="#012169"/>' +
+      '<path d="M0,0 L60,36 M60,0 L0,36" stroke="#FFFFFF" stroke-width="6"/>' +
+      '<path d="M0,0 L60,36 M60,0 L0,36" stroke="#C8102E" stroke-width="2"/>' +
+      '<path d="M30,0 L30,36 M0,18 L60,18" stroke="#FFFFFF" stroke-width="10"/>' +
+      '<path d="M30,0 L30,36 M0,18 L60,18" stroke="#C8102E" stroke-width="6"/>' +
+      "</svg>",
+    th:
+      '<svg viewBox="0 0 60 36" width="16" height="16" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">' +
+      '<rect width="60" height="36" fill="#A51931"/>' +
+      '<rect y="6" width="60" height="24" fill="#F4F5F8"/>' +
+      '<rect y="12" width="60" height="12" fill="#2D2A4A"/>' +
+      "</svg>",
+  };
+
+  function setLangThumbFlag(thumb, lang) {
+    thumb.innerHTML = FLAG_ICONS[lang === "th" ? "th" : "en"];
+  }
+
   function buildThemeToggle(state) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "chloe-sidebar__theme-btn";
-    button.dataset.testid = "sidebar-theme-toggle";
+    const themeSwitch = createSwitch("sidebar-theme-toggle", "Toggle dark theme", "chloe-switch--theme");
+    const { wrapper, offLabel, onLabel, thumb } = themeSwitch;
 
-    const iconEl = document.createElement("i");
-    iconEl.setAttribute("aria-hidden", "true");
-
-    function render() {
+    function applyThemeState() {
       const isDark = state.theme === "dark";
-      button.setAttribute("aria-pressed", String(isDark));
-      iconEl.className = `bi ${isDark ? "bi-sun-fill" : "bi-moon-stars-fill"}`;
-      if (!TRANSLATIONS) return;
-      button.setAttribute("aria-label", TRANSLATIONS[state.lang].themeToggleLabel);
-      button.title = TRANSLATIONS[state.lang].themeToggleLabel;
+      wrapper.setAttribute("aria-checked", String(isDark));
+      setSwitchActiveSide(themeSwitch, isDark);
+      thumb.textContent = isDark ? "🌙" : "☀️";
     }
 
-    button.appendChild(iconEl);
-    button.addEventListener("click", () => {
+    applyThemeState();
+
+    function render() {
+      if (!TRANSLATIONS) return;
+      const t = TRANSLATIONS[state.lang];
+      wrapper.setAttribute("aria-label", t.themeToggleLabel);
+      offLabel.textContent = t.themeLabelLight;
+      onLabel.textContent = t.themeLabelDark;
+    }
+
+    bindSwitchActivation(wrapper, () => {
       state.theme = state.theme === "dark" ? "light" : "dark";
       window.localStorage.setItem(THEME_STORAGE_KEY, state.theme);
       document.documentElement.setAttribute("data-chloe-theme", state.theme);
-      render();
+      applyThemeState();
     });
 
     render();
     state.onLanguageChange.push(render);
-    return button;
+    return wrapper;
   }
 
-  function buildLanguageSelect(state) {
-    const select = document.createElement("select");
-    select.className = "chloe-sidebar__lang-select";
-    select.dataset.testid = "sidebar-language-select";
+  function buildLanguageToggle(state) {
+    const langSwitch = createSwitch("sidebar-language-toggle", "Switch language", "chloe-switch--lang");
+    const { wrapper, offLabel, onLabel, thumb } = langSwitch;
 
-    ["en", "th"].forEach((lang) => {
-      const option = document.createElement("option");
-      option.value = lang;
-      option.textContent = lang.toUpperCase();
-      select.appendChild(option);
-    });
-
-    function render() {
-      select.value = state.lang;
-      if (!TRANSLATIONS) return;
-      select.setAttribute("aria-label", TRANSLATIONS[state.lang].langSelectLabel);
+    function applyLangState() {
+      const isTh = state.lang === "th";
+      wrapper.setAttribute("aria-checked", String(isTh));
+      setSwitchActiveSide(langSwitch, isTh);
+      setLangThumbFlag(thumb, state.lang);
     }
 
-    select.value = state.lang;
-    select.addEventListener("change", () => {
-      state.lang = select.value === "th" ? "th" : "en";
+    applyLangState();
+
+    function render() {
+      if (!TRANSLATIONS) return;
+      const t = TRANSLATIONS[state.lang];
+      wrapper.setAttribute("aria-label", t.languageToggleLabel);
+      offLabel.textContent = t.langLabelEn;
+      onLabel.textContent = t.langLabelTh;
+    }
+
+    bindSwitchActivation(wrapper, () => {
+      state.lang = state.lang === "th" ? "en" : "th";
       window.localStorage.setItem(LANG_STORAGE_KEY, state.lang);
       document.documentElement.lang = state.lang;
+      applyLangState();
       state.onLanguageChange.forEach((fn) => fn());
     });
 
     render();
     state.onLanguageChange.push(render);
-    return select;
+    return wrapper;
   }
 
   function buildSidebar(state) {
@@ -179,7 +261,7 @@
     const controls = document.createElement("div");
     controls.className = "chloe-sidebar__controls";
     controls.appendChild(buildThemeToggle(state));
-    controls.appendChild(buildLanguageSelect(state));
+    controls.appendChild(buildLanguageToggle(state));
     footerNav.appendChild(controls);
 
     aside.appendChild(footerNav);
