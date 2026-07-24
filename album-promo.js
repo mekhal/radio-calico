@@ -81,8 +81,10 @@
     return window.localStorage.getItem(LANG_STORAGE_KEY) === "th" ? "th" : "en";
   }
 
+  // Dark is the default template theme (issue #155 review, 2026-07-24) —
+  // only an explicit stored "light" choice opts back out.
   function getStoredTheme() {
-    return window.localStorage.getItem(THEME_STORAGE_KEY) === "dark" ? "dark" : "light";
+    return window.localStorage.getItem(THEME_STORAGE_KEY) === "light" ? "light" : "dark";
   }
 
   function createIconLink({ testid, href, label, icon, external }) {
