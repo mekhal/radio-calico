@@ -18,33 +18,11 @@
     <link rel="stylesheet" href="album-promo.css" />
   </head>
   <body>
-    <!-- Ticket A: fixed social sidebar — also carries the page's footer content (no separate bottom footer). -->
-    <aside class="chloe-sidebar" aria-label="Social links and site footer">
-      <nav class="chloe-sidebar__icons" aria-label="Social media">
-        <a href="#" aria-label="Instagram"><i class="bi bi-instagram" aria-hidden="true"></i></a>
-        <a href="#" aria-label="Facebook"><i class="bi bi-facebook" aria-hidden="true"></i></a>
-        <a href="#" aria-label="X (Twitter)"><i class="bi bi-twitter-x" aria-hidden="true"></i></a>
-        <a href="#" aria-label="YouTube"><i class="bi bi-youtube" aria-hidden="true"></i></a>
-        <a href="#" aria-label="Spotify"><i class="bi bi-spotify" aria-hidden="true"></i></a>
-      </nav>
-      <p class="chloe-sidebar__copy">&copy; 2026 Radio Calico. Released under the MIT License.</p>
-    </aside>
+    <!-- Ticket A: header, fixed footer-links sidebar, and footer content are
+         all rendered by album-promo.js (same DOM-construction pattern as
+         app.js's initApp()) rather than hard-coded here. -->
+    <div id="album-promo-root"></div>
 
-    <div class="chloe-page">
-      <!-- Ticket A: header — wordmark + nav -->
-      <header class="chloe-header">
-        <span class="chloe-wordmark">Chloe</span>
-        <nav class="chloe-nav" aria-label="Primary">
-          <a href="#home">Home</a>
-          <a href="#about">About</a>
-          <a href="#whats-this">What's this</a>
-          <a href="#contact">Contact</a>
-        </nav>
-      </header>
-
-      <main class="chloe-main">
-        <!-- Hero, player card, and theme polish land in Tickets B/C/D/E -->
-      </main>
-    </div>
+    <script src="album-promo.js"></script>
   </body>
 </html>

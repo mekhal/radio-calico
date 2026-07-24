@@ -14,7 +14,7 @@ body {
   font-family: "Cormorant Garamond", "Playfair Display", serif;
 }
 
-/* --- Ticket A: fixed vertical social sidebar (also the page footer) --- */
+/* --- Ticket A: fixed vertical footer-links sidebar --- */
 .chloe-sidebar {
   position: fixed;
   top: 0;
@@ -119,7 +119,12 @@ body {
 
   .chloe-sidebar__icons {
     flex-direction: row;
+    flex-wrap: nowrap;
+    flex-shrink: 0;
     gap: 1.25rem;
+    max-width: 100%;
+    overflow-x: auto;
+    padding: 0 0.75rem;
   }
 
   .chloe-sidebar__copy {
