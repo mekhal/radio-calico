@@ -3,8 +3,18 @@
   --chloe-sidebar-bar-h: 64px;
   --chloe-pink: #f0c6d2;
   --chloe-pink-deep: #d98fa3;
+  --chloe-mint: #d8f2d5;
   --chloe-sage: #eaf1e6;
   --chloe-ink: #2f2a2c;
+}
+
+/* Ticket A review (2026-07-24): dark theme toggled via [data-chloe-theme]
+   on <html>, scoped to this page only — index.html/app.js/styles.css are
+   untouched (AC6), so this doesn't share app.js's own theme system. */
+[data-chloe-theme="dark"] {
+  --chloe-sage: #201c1e;
+  --chloe-ink: #f5eee0;
+  --chloe-pink-deep: #f0b8c9;
 }
 
 body {
@@ -24,9 +34,9 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   padding: 1.5rem 0;
-  background: #ffffff;
+  background: transparent;
   border-right: 1px solid rgba(0, 0, 0, 0.08);
   z-index: 1030;
 }
@@ -49,17 +59,48 @@ body {
   color: var(--chloe-pink-deep);
 }
 
-.chloe-sidebar__copy {
-  writing-mode: vertical-rl;
+.chloe-sidebar__controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.chloe-sidebar__theme-btn {
+  background: transparent;
+  border: none;
+  color: var(--chloe-ink);
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+
+.chloe-sidebar__theme-btn:hover {
+  color: var(--chloe-pink-deep);
+}
+
+.chloe-sidebar__lang-select {
+  font-family: "Cormorant Garamond", serif;
   font-size: 0.75rem;
   letter-spacing: 0.05em;
-  margin: 0;
-  opacity: 0.7;
+  color: var(--chloe-ink);
+  background: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+  padding: 0.15rem 0.3rem;
+  cursor: pointer;
 }
 
 /* --- Ticket A: header --- */
 .chloe-page {
   padding-left: var(--chloe-sidebar-w);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 .chloe-header {
@@ -71,12 +112,24 @@ body {
   padding: 1.5rem 2rem;
 }
 
+/* Logo lockup ("Radio" + mark + "Calico") — review decision on issue #155
+   (2026-07-24): #D8F2D5 (brand Mint, see RadioCalicoStyle/RadioCalico_Style_Guide.txt)
+   applies strictly to this lockup; the rest of the page keeps the pastel-pink
+   "Chloe" theme from AC1/#150. */
 .chloe-wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   font-family: "Playfair Display", serif;
   font-style: italic;
   font-weight: 700;
   font-size: 2rem;
-  color: var(--chloe-pink-deep);
+  color: var(--chloe-mint);
+}
+
+.chloe-wordmark__logo {
+  height: 1.5em;
+  width: auto;
 }
 
 .chloe-nav {
@@ -97,8 +150,30 @@ body {
 }
 
 .chloe-main {
+  flex: 1 0 auto;
   padding: 0 2rem 2rem;
   min-height: 40vh;
+}
+
+/* --- Ticket A review (2026-07-24): copyright/disclaimer moved out of the
+   sidebar into their own bottom-centered footer (AC4 revision) --- */
+.chloe-footer {
+  flex-shrink: 0;
+  text-align: center;
+  padding: 1.5rem 2rem 2rem;
+}
+
+.chloe-footer__disclaimer {
+  font-size: 0.8rem;
+  opacity: 0.7;
+  margin: 0 0 0.35rem;
+}
+
+.chloe-footer__copy {
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  opacity: 0.7;
+  margin: 0;
 }
 
 /* --- Ticket A: mobile — sidebar collapses to a bottom bar --- */
@@ -121,14 +196,20 @@ body {
     flex-direction: row;
     flex-wrap: nowrap;
     flex-shrink: 0;
+    align-items: center;
     gap: 1.25rem;
     max-width: 100%;
     overflow-x: auto;
     padding: 0 0.75rem;
   }
 
-  .chloe-sidebar__copy {
-    display: none;
+  .chloe-sidebar__controls {
+    flex-direction: row;
+    margin-top: 0;
+    padding-top: 0;
+    padding-left: 0.75rem;
+    border-top: none;
+    border-left: 1px solid rgba(0, 0, 0, 0.08);
   }
 
   .chloe-page {
